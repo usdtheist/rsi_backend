@@ -91,10 +91,10 @@ WSGI_APPLICATION = 'rsi_project.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'rsi_development',
-        'USER': 'postgres',
-        'PASSWORD': 'postgres',
-        'HOST': 'localhost',
+        'NAME': os.environ.get('DATABASE_NAME', 'rsi_development'),
+        'USER': os.environ.get('DATABASE_USERNAME','postgres'),
+        'PASSWORD': os.environ.get('DATABASE_PASSWORD','postgres'),
+        'HOST': os.environ.get('DATABASE_HOST','localhost'),
         'PORT': '5432',
     }
 }
