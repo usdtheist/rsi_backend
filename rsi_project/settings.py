@@ -93,8 +93,8 @@ DATABASES = {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': 'rsi_development',
         'USER': 'postgres',
-        'PASSWORD': 'FdgXkZ6m4dNUoAJqSq2c',
-        'HOST': 'rsi-test.cvkekyiuc9bv.ap-south-1.rds.amazonaws.com',
+        'PASSWORD': 'postgres',
+        'HOST': 'localhost',
         'PORT': '5432',
     }
 }
