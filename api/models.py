@@ -15,7 +15,7 @@ class Strategy(models.Model):
   id = models.AutoField(primary_key=True)
   name = models.CharField(max_length=50)
   coin_id = models.ForeignKey(Coin, on_delete=models.CASCADE, related_name='strategies')
-  rsi_type = models.IntegerField(max_length=3, null=False)
+  rsi_type = models.IntegerField(null=False)
 
 class  UserStrategy(models.Model):
   id = models.AutoField(primary_key=True)
