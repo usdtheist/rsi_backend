@@ -1,0 +1,33 @@
+from django.db.models.signals import pre_save, post_save # type: ignore
+from django.dispatch import receiver # type: ignore
+from django.core.exceptions import ValidationError # type: ignore
+from api.models import Coin, User, UserStrategy, Strategy
+from bot.binance.b_client import BinanceClient
+from bot.tasks import register_webhook
+from asgiref.sync import sync_to_async # type: ignore
+import asyncio
+
+@receiver(pre_save, sender=Coin)
+def before_save_coin(sender, instance, **kwargs):
+  user = User.objects.first()
+  
+  binance_client = BinanceClient(user.client_id, user.client_secret)
+  min_notional = binance_client.get_min_notional(instance.name.upper())
+
+  if min_notional == None:
+    raise ValidationError('Unable to find min_notional value from binance')
+  else:
+    instance.min_value = min_notional
+
+@receiver(pre_save, sender=UserStrategy)
+def before_save_user_strategy(sender, instance, **kwargs):
+  if instance.enabled and instance.amount < instance.strategy_id.coin_id.min_value:
+    raise ValidationError(f"Minimum amount should be more than {instance.strategy_id.coin_id.min_value}")
+
+@receiver(post_save, sender=Strategy)
+def after_save_strategy(sender, instance, created, **kwargs):
+  if created:
+    strategies = Strategy.objects.filter(id=instance.id)
+    if strategies.count() == 1:
+      user = User.objects.first()
+      # asyncio.run(sync_to_async(register_webhook.delay)(user.client_id, user.client_secret, instance.rsi_time, instance.coin_id.name))

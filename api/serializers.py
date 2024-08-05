@@ -12,11 +12,16 @@ class CoinSerializer(serializers.ModelSerializer):
     fields = '__all__'
 
 class StrategySerializer(serializers.ModelSerializer):
+  # coin_id = CoinSerializer()
+
   class Meta:
     model = Strategy
     fields = '__all__'
 
 class UserStrategySerializer(serializers.ModelSerializer):
+  # strategy_id = StrategySerializer()
+  # user_id = UserSerializer()
+
   class Meta:
     model = UserStrategy
     fields = '__all__'
