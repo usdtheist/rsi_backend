@@ -9,7 +9,7 @@ class SellClient(BinanceClient):
     quantity = Decimal(0)
     for db_order in db_orders:
       quantity += Decimal(db_order.quantity)
-    
+
     current_price = self.getPriceOfSymbol(symbol)
     usd_amount = quantity * Decimal(current_price)
     usd_amount = '{:.8f}'.format(usd_amount)

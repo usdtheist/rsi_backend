@@ -21,6 +21,7 @@ class StrategySerializer(serializers.ModelSerializer):
 class UserStrategySerializer(serializers.ModelSerializer):
   # strategy_id = StrategySerializer()
   # user_id = UserSerializer()
+  strategy_name = serializers.CharField(source='strategy_id.name', read_only=True)
 
   class Meta:
     model = UserStrategy

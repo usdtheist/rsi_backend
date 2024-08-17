@@ -61,26 +61,27 @@ class BinanceClient(Client):
     return db_order
 
 
-import logging
-from api.models import *
-from bot.binance.buy_client import BuyClient
-from bot.models import *
+# import logging
+# from api.models import *
+# from bot.binance.buy_client import BuyClient
+# from bot.models import *
 
-user_strategy = UserStrategy.objects.filter(enabled=True, strategy_id__rsi_time='1m').first()
-user = User.objects.first()
-symbol = 'WUSDT'
-coin = 'WUSDT'
-interval = user_strategy.strategy_id.rsi_time
+# user_strategy = UserStrategy.objects.filter(enabled=True, strategy_id__rsi_time='1m').first()
+# user = User.objects.first()
+# symbol = 'WUSDT'
+# coin = 'WUSDT'
+# interval = user_strategy.strategy_id.rsi_time
 
-logger = logging.getLogger(f"{coin}_{interval}")
-logger.setLevel(logging.INFO)
-handler = logging.FileHandler(f"log/{coin}_{interval}_rsi_values.log")
-handler.setLevel(logging.INFO)
-formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
-handler.setFormatter(formatter)
-logger.addHandler(handler)
+# logger = logging.getLogger(f"{coin}_{interval}")
+# logger.setLevel(logging.INFO)
+# handler = logging.FileHandler(f"log/{coin}_{interval}_rsi_values.log")
+# handler.setLevel(logging.INFO)
+# formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
+# handler.setFormatter(formatter)
+# logger.addHandler(handler)
 
-binance_client = BuyClient(user.client_id, user.client_secret)
+# binance_client = BuyClient(user.client_id, user.client_secret)
+# strategy = user_strategy
 
 # db_orders = Order.objects.filter(
 #   user_strategy=user_strategy,

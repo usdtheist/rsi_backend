@@ -1,5 +1,4 @@
 from django.apps import AppConfig
-from django.db.models.signals import post_migrate
 
 class BotConfig(AppConfig):
   default_auto_field = 'django.db.models.BigAutoField'
@@ -8,7 +7,6 @@ class BotConfig(AppConfig):
   def ready(self):
     from bot.tasks import register_webhook
     from api.models import User, Strategy
-    # from asgiref.sync import sync_to_async # type: ignore
 
     user = User.objects.first()
     uniq_strategies = Strategy.objects.distinct('rsi_time')

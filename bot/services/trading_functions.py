@@ -73,6 +73,7 @@ def start_trading(rsi_6, rsi_14, interval, symbol, logger):
 
   # Fetch users with enabled UserStrategies
   logger.info(f"Signal ===================>>>>> %s" % signal)
+  logger.info(f"RSI ======================>>>>> %s" % rsi_type)
 
   if signal == 'HOLD':
     return
