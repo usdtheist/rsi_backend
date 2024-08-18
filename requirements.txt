@@ -33,7 +33,6 @@ importlib-metadata==4.8.1
 incremental==22.10.0
 kombu==5.2.3
 multidict==6.0.5
-numpy==1.21.6
 packaging==24.0
 prometheus-client==0.17.1
 prompt_toolkit==3.0.47
