@@ -19,9 +19,9 @@ class StrategySerializer(serializers.ModelSerializer):
     fields = '__all__'
 
 class UserStrategySerializer(serializers.ModelSerializer):
-  # strategy_id = StrategySerializer()
-  # user_id = UserSerializer()
   strategy_name = serializers.CharField(source='strategy_id.name', read_only=True)
+  rsi_type = serializers.CharField(source='strategy_id.rsi_type', read_only=True)
+  rsi_time = serializers.CharField(source='strategy_id.rsi_time', read_only=True)
 
   class Meta:
     model = UserStrategy
