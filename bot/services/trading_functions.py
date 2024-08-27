@@ -68,32 +68,32 @@ def fetch_strategies(interval, symbol, rsi_type):
       strategy_id__coin_id__name=symbol
     ).distinct()
 
-def start_trading(rsi_6, rsi_14, interval, symbol, logger):
+def start_trading(rsi_6, rsi_14, interval, symbol):
   signal, rsi_type = generate_signals(rsi_6, rsi_14)
 
   # Fetch users with enabled UserStrategies
-  logger.info(f"Signal ===================>>>>> %s" % signal)
-  logger.info(f"RSI ======================>>>>> %s" % rsi_type)
+  print(f"Signal ===================>>>>> %s" % signal)
+  print(f"RSI ======================>>>>> %s" % rsi_type)
 
   if signal == 'HOLD':
     return
 
   strategies = fetch_strategies(interval, symbol, rsi_type)
-  logger.info("Processing ----------------------------------------------------------------")
-  logger.info(strategies.values())
-  logger.info("Processing ----------------------------------------------------------------")
+  print("Processing ----------------------------------------------------------------")
+  print(strategies.values())
+  print("Processing ----------------------------------------------------------------")
   # Display the fetched users
   if strategies:
     for strategy in strategies:
       # strategy = strategies[0]
       user = strategy.user_id
-      logger.info(f"Strategy:   {strategy.strategy_id.coin_id.name}: {user.email}: {strategy.strategy_id.name}")
-      logger.info(f"start order for user {user.id}")
-      logger.info(f"User is eligible for BUY: {strategy.purchased == False and signal == 'BUY'}")
-      logger.info(f"User is eligible for SELL: {strategy.purchased == True and strategy.sale == False and signal == 'SELL'}")
+      print(f"Strategy:   {strategy.strategy_id.coin_id.name}: {user.email}: {strategy.strategy_id.name}")
+      print(f"start order for user {user.id}")
+      print(f"User is eligible for BUY: {strategy.purchased == False and signal == 'BUY'}")
+      print(f"User is eligible for SELL: {strategy.purchased == True and strategy.sale == False and signal == 'SELL'}")
       if strategy.purchased == False and signal == 'BUY':
         binance_client = BuyClient(user.client_id, user.client_secret)
-        order = binance_client.buySymbol(symbol, strategy, logger)
+        order = binance_client.buySymbol(symbol, strategy)
       elif strategy.purchased == True and strategy.sale == False and signal == 'SELL':
         binance_client = SellClient(user.client_id, user.client_secret)
         db_orders = Order.objects.filter(
@@ -102,7 +102,7 @@ def start_trading(rsi_6, rsi_14, interval, symbol, logger):
           parent__isnull=True,
         )
         print('Selling order for user {user.id}')
-        order = binance_client.sellSymbol(symbol, strategy, db_orders, logger)
+        order = binance_client.sellSymbol(symbol, strategy, db_orders)
         print('-----------------------------------------------')
         print(f"Sell Order for user {user.id}: {order}")
         print('-----------------------------------------------')
@@ -111,7 +111,7 @@ def start_trading(rsi_6, rsi_14, interval, symbol, logger):
 
       print(f"Order for user {user.id}: {order}")
 
-  logger.info("---------------------------------------------------------------- Processed")
+  print("---------------------------------------------------------------- Processed")
   return strategies
 
 # from api.models import UserStrategy
