@@ -24,8 +24,6 @@ class BinanceClient(Client):
   def create_db_order(self, order, user_strategy, amount=None, parentOrders=None):
     from bot.models import Order
 
-    fills = order['fills'][0]
-
     if order['side'].lower() == 'buy':
       user_strategy.purchased = True
       user_strategy.purchased_at = timezone.now()
@@ -44,48 +42,15 @@ class BinanceClient(Client):
       order_type=order['side'],
       amount=amount,
       user_strategy=user_strategy,
-      price_unit=fills['price'],
+      price_unit=order['fills'][0]['price'],
       quantity=order['origQty'],
-      commission=fills['commission'],
+      commission=sum([float(fill['commission']) for fill in order['fills']]),
       external_response = order
     )
 
     if parentOrders:
-      db_order.parent = parentOrders[0]
-      db_order.save()
-
       for order in parentOrders:
         order.parent = db_order
         order.save()
 
-    return db_order
-
-
-# import logging
-# from api.models import *
-# from bot.binance.buy_client import BuyClient
-# from bot.models import *
-
-# user_strategy = UserStrategy.objects.filter(enabled=True, strategy_id__rsi_time='1m').first()
-# user = User.objects.first()
-# symbol = 'WUSDT'
-# coin = 'WUSDT'
-# interval = user_strategy.strategy_id.rsi_time
-
-# logger = logging.getLogger(f"{coin}_{interval}")
-# logger.setLevel(logging.INFO)
-# handler = logging.FileHandler(f"log/{coin}_{interval}_rsi_values.log")
-# handler.setLevel(logging.INFO)
-# formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
-# handler.setFormatter(formatter)
-# logger.addHandler(handler)
-
-# binance_client = BuyClient(user.client_id, user.client_secret)
-# strategy = user_strategy
-
-# db_orders = Order.objects.filter(
-#   user_strategy=user_strategy,
-#   order_type='BUY',
-#   parent__isnull=True,
-# )
-# order = binance_client.sellSymbol(symbol, user_strategy, db_orders, logger)
+    print(db_order)

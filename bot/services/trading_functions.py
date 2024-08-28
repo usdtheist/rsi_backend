@@ -2,6 +2,7 @@ from bot.binance.buy_client import BuyClient
 from bot.binance.sell_client import SellClient
 from api.models import UserStrategy
 from bot.models import Order
+
 def generate_signals(rsi_value_6, rsi_value_14):
   signal = 'HOLD'
   rsi_type = None
@@ -26,13 +27,6 @@ def generate_signals(rsi_value_6, rsi_value_14):
     rsi_type = [6,14]
 
   return signal, rsi_type
-  # if rsi_value_14 >= 30 and rsi_value_14 <= 70:
-  #   if rsi_value_6 <= 30:
-  #     signal = "BUY"
-  #   elif rsi_value_6 >= 70:
-  #     signal = "SELL"
-
-  # return signal
 
 def calculate_rsi(prices, window=14):
   deltas = [prices[i + 1] - prices[i] for i in range(len(prices) - 1)]
@@ -71,7 +65,6 @@ def fetch_strategies(interval, symbol, rsi_type):
 def start_trading(rsi_6, rsi_14, interval, symbol):
   signal, rsi_type = generate_signals(rsi_6, rsi_14)
 
-  # Fetch users with enabled UserStrategies
   print(f"Signal ===================>>>>> %s" % signal)
   print(f"RSI ======================>>>>> %s" % rsi_type)
 
@@ -79,18 +72,17 @@ def start_trading(rsi_6, rsi_14, interval, symbol):
     return
 
   strategies = fetch_strategies(interval, symbol, rsi_type)
-  print("Processing ----------------------------------------------------------------")
   print(strategies.values())
   print("Processing ----------------------------------------------------------------")
-  # Display the fetched users
+
   if strategies:
     for strategy in strategies:
-      # strategy = strategies[0]
       user = strategy.user_id
       print(f"Strategy:   {strategy.strategy_id.coin_id.name}: {user.email}: {strategy.strategy_id.name}")
       print(f"start order for user {user.id}")
       print(f"User is eligible for BUY: {strategy.purchased == False and signal == 'BUY'}")
       print(f"User is eligible for SELL: {strategy.purchased == True and strategy.sale == False and signal == 'SELL'}")
+
       if strategy.purchased == False and signal == 'BUY':
         binance_client = BuyClient(user.client_id, user.client_secret)
         order = binance_client.buySymbol(symbol, strategy)
@@ -113,12 +105,3 @@ def start_trading(rsi_6, rsi_14, interval, symbol):
 
   print("---------------------------------------------------------------- Processed")
   return strategies
-
-# from api.models import UserStrategy
-# strategies = UserStrategy.objects.filter(enabled=True).distinct()
-# strategy = strategies[0]
-# user = strategy.user_id
-
-# from bot.services.binance import BinanceClient
-# binance_client = BinanceClient('KVld92AXFwcPKTWVRfdgHLjTf3wOOzP33BZzkVSZMCgAeYyfhOMFqqzPxSLYezZy', 'lTe5vxgNvqyJKKdGEdz6nGHICh7YohGOdTxRjWtHDEKZADT7f0dOshceG175I99B')
-# binance_client = BinanceClient(user.client_id, user.client_secret)
