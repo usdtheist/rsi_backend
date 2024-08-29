@@ -20,7 +20,9 @@ class TradeViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
                   order_type='BUY',
                 ).annotate(
                   buy_id=F('id'),
+                  buy_date=F('created_at'),
                   sell_id=F('parent__id'),
+                  sell_date=F('parent__created_at'),
                   buy_price=Cast(F('price_unit'), DecimalField(max_digits=20, decimal_places=8)),
                   buy_commission=Cast(F('commission'), DecimalField(max_digits=20, decimal_places=8)),
                   sell_price=Cast(F('parent__price_unit'), DecimalField(max_digits=20, decimal_places=8)),
@@ -35,13 +37,16 @@ class TradeViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
                   )
                 ).order_by('-created_at'
                 ).values(
-                  'buy_id', 'sell_id', 'buy_price', 'sell_price', 'buy_quantity', 'sell_quantity', 'profit_or_loss',
+                  'buy_id', 'sell_id', 'buy_date', 'sell_date', 'buy_price', 'sell_price', 'buy_quantity', 'sell_quantity', 'profit_or_loss',
                   'buy_commission', 'sell_price', 'buy_strategy_id', 'sell_strategy_id', 'sell_commission'
                 )
 
     strategy_id = self.request.query_params.get('strategy_id', None)
+    user_id = self.request.query_params.get('user_id', None)
     if strategy_id:
-        queryset = queryset.filter(user_strategy_id=strategy_id)
+      queryset = queryset.filter(user_strategy_id=strategy_id)
+    if user_id:
+      queryset = queryset.filter(user_strategy_id__user_id=user_id)
 
     return queryset
 
