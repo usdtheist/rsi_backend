@@ -7,6 +7,7 @@ class OrderSerializer(serializers.ModelSerializer):
     fields = '__all__'
 
 class TradeSerializer(serializers.Serializer):
+  buy_amount = serializers.FloatField()
   buy_id = serializers.IntegerField()
   buy_date = serializers.DateTimeField()
   buy_strategy_id = serializers.IntegerField()

@@ -19,6 +19,7 @@ class TradeViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
     queryset = Order.objects.filter(
                   order_type='BUY',
                 ).annotate(
+                  buy_amount=F('amount'),
                   buy_id=F('id'),
                   buy_date=F('created_at'),
                   sell_id=F('parent__id'),
@@ -38,7 +39,7 @@ class TradeViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
                 ).order_by('-created_at'
                 ).values(
                   'buy_id', 'sell_id', 'buy_date', 'sell_date', 'buy_price', 'sell_price', 'buy_quantity', 'sell_quantity', 'profit_or_loss',
-                  'buy_commission', 'sell_price', 'buy_strategy_id', 'sell_strategy_id', 'sell_commission'
+                  'buy_commission', 'sell_price', 'buy_strategy_id', 'sell_strategy_id', 'sell_commission', 'buy_amount'
                 )
 
     strategy_id = self.request.query_params.get('strategy_id', None)
