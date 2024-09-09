@@ -1,7 +1,8 @@
 from rest_framework import viewsets, mixins
 from rest_framework.response import Response
+from rest_framework.decorators import action
 from django_filters.rest_framework import DjangoFilterBackend
-from django.db.models import F, ExpressionWrapper, DecimalField
+from django.db.models import Sum, F, ExpressionWrapper, DecimalField
 from django.db.models.functions import Cast
 from bot.models import Order
 from bot.serializers import OrderSerializer, TradeSerializer
@@ -56,3 +57,11 @@ class TradeViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
     queryset = self.get_queryset()
     serializer = TradeSerializer(queryset, many=True)
     return Response(serializer.data)
+  
+  @action(detail=False, methods=['get'], url_path='count')
+  def count(self,  request, *args, **kwargs):
+    queryset = self.get_queryset()
+    
+    total_profit_or_loss = queryset.aggregate(total_profit_or_loss=Sum('profit_or_loss'))
+    total_investment = queryset.aggregate(total_investment=Sum(F('amount')))
+    return Response({'total': total_profit_or_loss, 'total_investment': total_investment})
