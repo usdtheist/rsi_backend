@@ -15,7 +15,7 @@ class OrderViewSet(viewsets.ModelViewSet):
 
 class TradeViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
   def get_queryset(self):
-    
+
     queryset = Order.objects.filter(
                   order_type='BUY',
                 ).annotate(
@@ -34,7 +34,7 @@ class TradeViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
                   buy_quantity=Cast(F('quantity'), DecimalField(max_digits=20, decimal_places=8)),
                   sell_quantity=Cast(F('parent__quantity'), DecimalField(max_digits=20, decimal_places=8)),
                   profit_or_loss=ExpressionWrapper(
-                    ((F('sell_price') * F('sell_quantity')) - F('sell_commission')) - ((F('buy_price') * F('buy_quantity'))  - F('buy_commission')),
+                    ((F('sell_price') * F('sell_quantity')) - F('sell_commission')) - F('amount'),
                     output_field=DecimalField(max_digits=20, decimal_places=8)
                   )
                 ).order_by('-created_at'
