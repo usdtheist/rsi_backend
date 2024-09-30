@@ -12,7 +12,7 @@ class User(AbstractBaseUser, PermissionsMixin):
   is_staff = models.BooleanField(default=False)
   client_secret = models.CharField(max_length=100, null=True, blank=True)
   client_id = models.CharField(max_length=100, null=True, blank=True)
-  date_joined = models.DateTimeField(default=timezone.now)
+  date_joined = models.DateTimeField(auto_now_add=True)
   payment_receipt_url = models.URLField(blank=True, null=True)
   approved_at = models.DateTimeField(null=True, blank=True)
 

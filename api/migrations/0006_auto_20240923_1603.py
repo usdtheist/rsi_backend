@@ -15,7 +15,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='user',
             name='date_joined',
-            field=models.DateTimeField(default=django.utils.timezone.now),
+            field=models.DateTimeField(auto_now_add=True),
         ),
         migrations.AddField(
             model_name='user',
