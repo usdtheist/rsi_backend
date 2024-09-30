@@ -12,6 +12,7 @@ class GetKliesApi:
     self.closed_prices = []
 
   def run(self):
+    print("coin", self.pair)
     limit = 100
     client =  Client(self.api_key, self.api_secret)
     klines = client.get_klines(symbol=self.pair, interval=self.interval, limit=limit)

@@ -21,11 +21,13 @@ def before_save_coin(sender, instance, **kwargs):
 
 @receiver(post_save, sender=User)
 def after_save_user(sender, instance, created, **kwargs):
-  setup_user.delay(instance.id)
+  if created:
+    setup_user.delay(instance.id)
 
 @receiver(post_save, sender=Coin)
 def after_save_coin(sender, instance, created, **kwargs):
-  setup_coin_strategies.delay(instance.id)
+  if created:
+    setup_coin_strategies.delay(instance.id)
 
 @receiver(pre_save, sender=UserStrategy)
 def before_save_user_strategy(sender, instance, **kwargs):

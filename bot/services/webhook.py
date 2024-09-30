@@ -42,10 +42,9 @@ class WebSocketClient:
         rsi_6 = round(calculate_rsi(self.closes + self.opens, window=6), 2)
         rsi_14 = round(calculate_rsi(self.closes + self.opens, window=14), 2)
 
-        print(f"====================================================>>>>>>>>    THE RSI 6: {rsi_6}")
-        print(f"====================================================>>>>>>>>    THE RSI 14: {rsi_14}")
-        print("-=-=-=-=-=-=-=-=-=-=-")
-        # if rsi_6 <= 30 or rsi_14 <= 30 or rsi_6 >= 70 or rsi_14 >= 70:
+        print(f"====================================================>>>>>>>>    THE RSI 6: {rsi_6} of {self.coin}({self.interval})")
+        print(f"====================================================>>>>>>>>    THE RSI 14: {rsi_14} of {self.coin}({self.interval})")
+
         start_trading(rsi_6, rsi_14, self.interval, self.coin)
 
     except Exception as e:

@@ -7,6 +7,7 @@ from django.db.models.functions import Cast
 from bot.models import Order
 from bot.serializers import OrderSerializer, TradeSerializer
 from bot.filters import OrderFilter
+from rest_framework.permissions import IsAuthenticated
 
 class OrderViewSet(viewsets.ModelViewSet):
   queryset = Order.objects.all()
@@ -15,10 +16,13 @@ class OrderViewSet(viewsets.ModelViewSet):
   filterset_class = OrderFilter
 
 class TradeViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
+  permission_classes = [IsAuthenticated]
+
   def get_queryset(self):
 
     queryset = Order.objects.filter(
                   order_type='BUY',
+                  user_strategy_id__user_id=self.request.user.id,
                 ).annotate(
                   strategy_name=F('user_strategy_id__strategy_id__name'),
                   buy_amount=F('amount'),

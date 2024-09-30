@@ -2,31 +2,17 @@ from bot.binance.buy_client import BuyClient
 from bot.binance.sell_client import SellClient
 from api.models import UserStrategy
 from bot.models import Order
+from django.db.models import Q
 
 def generate_signals(rsi_value_6, rsi_value_14):
   signal = 'HOLD'
-  rsi_type = None
-  if rsi_value_6 <= 30:
-    signal = "BUY"
-    rsi_type = [6]
-  elif rsi_value_14 <= 30:
-    signal = "BUY"
-    rsi_type = [14]
-  elif rsi_value_14 >= 70:
-    signal = "SELL"
-    rsi_type = [14]
-  elif rsi_value_6 >= 70:
-    signal = "SELL"
-    rsi_type = [6]
-  
-  if rsi_value_6 <= 30 and rsi_value_14 <= 30:
-    signal = "BUY"
-    rsi_type = [6,14]
-  elif rsi_value_14 >= 70 and rsi_value_6 >= 70:
-    signal = "SELL"
-    rsi_type = [6,14]
 
-  return signal, rsi_type
+  if rsi_value_6 <= 30 or rsi_value_14 <= 30:
+    signal = "BUY"
+  elif rsi_value_6 >=70 or rsi_value_14 >= 70:
+    signal = "SELL"
+
+  return signal
 
 def calculate_rsi(prices, window=14):
   deltas = [prices[i + 1] - prices[i] for i in range(len(prices) - 1)]
@@ -54,24 +40,38 @@ def calculate_rsi(prices, window=14):
 
   return rsi_values[-1]
 
-def fetch_strategies(interval, symbol, rsi_type):
+def fetch_strategies_for_buy(interval, symbol, rsi_6, rsi_14):
   return UserStrategy.objects.filter(
-      enabled=True,
-      strategy_id__rsi_type__in=rsi_type,
-      strategy_id__rsi_time=interval,
-      strategy_id__coin_id__name=symbol
-    ).distinct()
+    enabled=True,
+    strategy_id__rsi_time=interval,
+    strategy_id__coin_id__name=symbol,
+    purchased=False
+  ).filter(
+    Q(strategy_id__rsi_type="6", strategy_id__buy_at__gte=rsi_6) |
+    Q(strategy_id__rsi_type="14", strategy_id__buy_at__gte=rsi_14)
+  ).distinct()
+  
+def fetch_strategeis_for_sell(interval, symbol, rsi_6, rsi_14):
+  return UserStrategy.objects.filter(
+    enabled=True,
+    strategy_id__rsi_time=interval,
+    strategy_id__coin_id__name=symbol,
+    purchased=True,
+    sale=False
+  ).filter(
+    Q(strategy_id__rsi_type="6", strategy_id__sell_at__lte=rsi_6) |
+    Q(strategy_id__rsi_type="14", strategy_id__sell_at__lte=rsi_14)
+  ).distinct()
 
 def start_trading(rsi_6, rsi_14, interval, symbol):
-  signal, rsi_type = generate_signals(rsi_6, rsi_14)
+  signal = generate_signals(rsi_6, rsi_14)
 
   print(f"Signal ===================>>>>> %s" % signal)
-  print(f"RSI ======================>>>>> %s" % rsi_type)
 
   if signal == 'HOLD':
     return
 
-  strategies = fetch_strategies(interval, symbol, rsi_type)
+  strategies = fetch_strategies_for_buy(interval, symbol, rsi_6, rsi_14) if signal == "BUY" else fetch_strategeis_for_sell(interval, symbol, rsi_6, rsi_14)
   print(strategies.values())
   print("Processing ----------------------------------------------------------------")
 
@@ -83,10 +83,10 @@ def start_trading(rsi_6, rsi_14, interval, symbol):
       print(f"User is eligible for BUY: {strategy.purchased == False and signal == 'BUY'}")
       print(f"User is eligible for SELL: {strategy.purchased == True and strategy.sale == False and signal == 'SELL'}")
 
-      if strategy.purchased == False and signal == 'BUY':
+      if signal == 'BUY':
         binance_client = BuyClient(user.client_id, user.client_secret)
         order = binance_client.buySymbol(symbol, strategy)
-      elif strategy.purchased == True and strategy.sale == False and signal == 'SELL':
+      elif signal == 'SELL':
         binance_client = SellClient(user.client_id, user.client_secret)
         db_orders = Order.objects.filter(
           user_strategy=strategy,

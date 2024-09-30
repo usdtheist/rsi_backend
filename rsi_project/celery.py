@@ -22,7 +22,7 @@ def register_webhook(api_key, secret_key, interval, coin):
   from bot.services.webhook import WebSocketClient
   from bot.services.klines_api import GetKliesApi
 
-  closed_klines = GetKliesApi(api_key, secret_key, interval=interval).run()
+  closed_klines = GetKliesApi(api_key, secret_key, pair=coin, interval=interval).run()
   socket_url = f"wss://stream.binance.com:9443/ws/{coin.lower()}@kline_{interval}"
   client = WebSocketClient(socket_url, closed_klines, interval=interval, coin=coin)
   client.run()

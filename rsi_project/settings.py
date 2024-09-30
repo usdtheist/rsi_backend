@@ -13,6 +13,7 @@ https://docs.djangoproject.com/en/3.2/ref/settings/
 from pathlib import Path
 import os
 from dotenv import load_dotenv
+from datetime import timedelta
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -53,6 +54,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'corsheaders',
     'django_filters',
+    'rest_framework_simplejwt.token_blacklist',
 ]
 
 MIDDLEWARE = [
@@ -65,6 +67,26 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    ),
+}
+
+AUTHENTICATION_BACKENDS = [
+    'django.contrib.auth.backends.ModelBackend',
+]
+
+AUTH_USER_MODEL = "api.User"
+
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(hours=24),  # Set access token lifetime (e.g., 24 hours)
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=7),   # Set refresh token lifetime (e.g., 7 days)
+    'ROTATE_REFRESH_TOKENS': True,
+    'BLACKLIST_AFTER_ROTATION': True,
+    'AUTH_HEADER_TYPES': ('Bearer',),
+}
 
 ROOT_URLCONF = 'rsi_project.urls'
 
@@ -153,28 +175,3 @@ STATIC_URL = '/static/'
 # https://docs.djangoproject.com/en/3.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
-
-# import asyncio
-# from bot.services.webhook import WebSocketClient
-# from bot.services.klines_api import GetKliesApi
-
-# api_key_hamid = 'xx9Zisod6JkXYS40IqoiTcWX3Lf9Pp1jjajCKgdt3b2HrvdHnCg1gNJ24BoHIn8Q'
-# api_secret_hamid = 'DUXWncMQYj6KV9sEfiUc3E8QCCTBRYxwwkBiFe1jDwWA5CBoPAxdlhTUR8w3kxEF'
-
-# SOCKETS = [
-#     "wss://stream.binance.com:9443/ws/wusdt@kline_1m",
-#     "wss://stream.binance.com:9443/ws/wusdt@kline_3m",
-#     "wss://stream.binance.com:9443/ws/wusdt@kline_5m",
-#     "wss://stream.binance.com:9443/ws/wusdt@kline_15m",
-#     "wss://stream.binance.com:9443/ws/wusdt@kline_30m",
-#     # Add more WebSocket URLs here
-# ]
-
-# for socket_url in SOCKETS:
-#     interval = socket_url.split('_')[-1:][0]
-#     closed_klines = GetKliesApi(api_key_hamid, api_secret_hamid, interval=interval).run()
-#     coin = "WUSDT"
-#     client = WebSocketClient(socket_url, closed_klines, interval=interval, coin=coin)
-#     asyncio.get_event_loop().run_in_executor(None, client.run)
-    
-# asyncio.get_event_loop().run_forever()
