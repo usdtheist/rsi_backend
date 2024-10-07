@@ -28,6 +28,7 @@ class Coin(models.Model):
   id = models.AutoField(primary_key=True)
   name = models.CharField(max_length=50)
   min_value = models.FloatField(null=True, default=0)
+  recommended = models.BooleanField(default=False)
 
 class Strategy(models.Model):
   id = models.AutoField(primary_key=True)
@@ -37,6 +38,7 @@ class Strategy(models.Model):
   rsi_time = models.CharField(max_length=10, null=False, default='1m')
   buy_at = models.IntegerField(null=False, default=30)
   sell_at = models.IntegerField(null=False, default=70)
+  recommended = models.BooleanField(default=False)
   
   class Meta:
     constraints = [

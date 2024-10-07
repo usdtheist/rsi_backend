@@ -43,9 +43,15 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
     raise serializers.ValidationError('Invalid credentials')
 
 class UserSerializer(serializers.ModelSerializer):
+  email = serializers.EmailField(read_only=True)
+  role = serializers.SerializerMethodField()
+
   class Meta:
     model = User
-    fields = ['id', 'full_name', 'active', 'client_id', 'client_secret', 'is_staff', 'payment_receipt_url', 'approved_at']
+    fields = ['id', 'full_name', 'email', 'active', 'active', 'client_id', 'client_secret', 'is_staff', 'payment_receipt_url', 'approved_at', 'role']
+
+  def get_role(self, obj):
+      return 'Admin' if obj.is_staff else 'User'
     
   def update(self, instance, validated_data):
     instance.full_name = validated_data.get('full_name', instance.full_name)
