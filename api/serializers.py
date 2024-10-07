@@ -48,7 +48,7 @@ class UserSerializer(serializers.ModelSerializer):
 
   class Meta:
     model = User
-    fields = ['id', 'full_name', 'email', 'active', 'active', 'client_id', 'client_secret', 'is_staff', 'payment_receipt_url', 'approved_at', 'role']
+    fields = ['id', 'full_name', 'email', 'active', 'active', 'client_id', 'client_secret', 'is_staff', 'payment_receipt_url', 'approved_at', 'role', 'date_joined']
 
   def get_role(self, obj):
       return 'Admin' if obj.is_staff else 'User'
