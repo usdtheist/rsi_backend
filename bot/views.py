@@ -22,7 +22,6 @@ class TradeViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
 
     queryset = Order.objects.filter(
                   order_type='BUY',
-                  user_strategy_id__user_id=self.request.user.id,
                 ).annotate(
                   strategy_name=F('user_strategy_id__strategy_id__name'),
                   buy_amount=F('amount'),
