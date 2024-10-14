@@ -75,6 +75,3 @@ class UserStrategyViewSet(viewsets.ModelViewSet):
     serializer_class = UserStrategySerializer
     filter_backends = [DjangoFilterBackend]
     filterset_class = UserStrategyFilter
-
-    def get_queryset(self):
-        return UserStrategy.objects.filter(user_id=self.request.user.id).order_by('id')
