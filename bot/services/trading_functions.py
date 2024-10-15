@@ -42,6 +42,7 @@ def calculate_rsi(prices, window=14):
 
 def fetch_strategies_for_buy(interval, symbol, rsi_6, rsi_14):
   return UserStrategy.objects.filter(
+    user_id__active=True,
     enabled=True,
     strategy_id__rsi_time=interval,
     strategy_id__coin_id__name=symbol,
@@ -53,6 +54,7 @@ def fetch_strategies_for_buy(interval, symbol, rsi_6, rsi_14):
   
 def fetch_strategeis_for_sell(interval, symbol, rsi_6, rsi_14):
   return UserStrategy.objects.filter(
+    user_id__active=True,
     enabled=True,
     strategy_id__rsi_time=interval,
     strategy_id__coin_id__name=symbol,

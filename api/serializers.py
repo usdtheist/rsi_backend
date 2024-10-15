@@ -54,6 +54,7 @@ class UserSerializer(serializers.ModelSerializer):
       return 'Admin' if obj.is_staff else 'User'
     
   def update(self, instance, validated_data):
+    instance.is_staff = validated_data.get('is_staff', instance.is_staff)
     instance.full_name = validated_data.get('full_name', instance.full_name)
     instance.active = validated_data.get('active', instance.active)
     instance.payment_receipt_url = validated_data.get('payment_receipt_url', instance.payment_receipt_url)
