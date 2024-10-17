@@ -1,12 +1,14 @@
-from rest_framework import viewsets, mixins
+from rest_framework import viewsets, mixins, status
 from rest_framework.response import Response
 from rest_framework.decorators import action
 from django_filters.rest_framework import DjangoFilterBackend
 from django.db.models import Sum, F, ExpressionWrapper, DecimalField
 from django.db.models.functions import Cast
 from bot.models import Order
+from api.models import UserStrategy, Coin
 from bot.serializers import OrderSerializer, TradeSerializer
 from bot.filters import OrderFilter
+from bot.binance.buy_client import BuyClient
 from rest_framework.permissions import IsAuthenticated
 
 class OrderViewSet(viewsets.ModelViewSet):
@@ -62,9 +64,24 @@ class TradeViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
     return Response(serializer.data)
   
   @action(detail=False, methods=['get'], url_path='count')
-  def count(self,  request, *args, **kwargs):
+  def count(self, request, *args, **kwargs):
     queryset = self.get_queryset()
     
     total_profit_or_loss = queryset.aggregate(total_profit_or_loss=Sum('profit_or_loss'))
     total_investment = queryset.aggregate(total_investment=Sum(F('amount')))
     return Response({'total': total_profit_or_loss, 'total_investment': total_investment})
+
+  @action(detail=False, methods=['get'], url_path='buy')
+  def buy(self, request, *args, **kwargs):
+    print(request.query_params)
+    user = self.request.user
+    user_strategy = UserStrategy.objects.get(id=request.query_params['user_strategy_id'])
+    coin = Coin.objects.get(id=request.query_params['coin_id'])
+
+    binance_client = BuyClient(user.client_id, user.client_secret)
+    order = binance_client.buySymbol(coin.name, user_strategy)
+
+    if not order:
+      return Response('Unable to buy Coin from Binance. Invalid error from Binance', status=422)
+
+    return Response(order, status=status.HTTP_200_OK)
