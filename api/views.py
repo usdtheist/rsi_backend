@@ -1,4 +1,5 @@
 from rest_framework import viewsets, status
+from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated
@@ -48,7 +49,7 @@ class UserViewSet(viewsets.ModelViewSet):
             active_bool = active.lower() == 'true'
             queryset = queryset.filter(active=active_bool)
 
-        return queryset
+        return queryset.order_by('id')
 
     def retrieve(self, request, *args, **kwargs):
         user = request.user
@@ -65,8 +66,18 @@ class CoinViewSet(viewsets.ModelViewSet):
 class StrategyViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
 
-    queryset = Strategy.objects.all()
+    queryset = Strategy.objects.all().order_by('id')
     serializer_class = StrategySerializer
+
+    @action(detail=False, methods=['post'], url_path='bulk')
+    def bulk_update(self, request):
+        for str_data in request.data:
+            strategy = Strategy.objects.get(id=str_data['id'])
+            strategy.recommended = str_data['recommended']
+
+            strategy.save()
+
+        return Response({"message": "All strategies updated successfully."}, status=status.HTTP_200_OK)
 
 class UserStrategyViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]

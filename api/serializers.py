@@ -80,6 +80,7 @@ class UserStrategySerializer(serializers.ModelSerializer):
   rsi_type = serializers.CharField(source='strategy_id.rsi_type', read_only=True)
   rsi_time = serializers.CharField(source='strategy_id.rsi_time', read_only=True)
   buy_at = serializers.CharField(source='strategy_id.buy_at', read_only=True)
+  recommended = serializers.BooleanField(source='strategy_id.recommended', read_only=True)
 
   class Meta:
     model = UserStrategy

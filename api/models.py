@@ -39,7 +39,7 @@ class Strategy(models.Model):
   buy_at = models.IntegerField(null=False, default=30)
   sell_at = models.IntegerField(null=False, default=70)
   recommended = models.BooleanField(default=False)
-  
+
   class Meta:
     constraints = [
       models.UniqueConstraint(fields=['name', 'coin_id'], name='unique_name_coin_id')
