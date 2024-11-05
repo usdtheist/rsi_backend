@@ -31,18 +31,18 @@ def register_webhook(api_key, secret_key, interval, coin):
 def at_startup(sender, **kwargs):
   from api.models import User, Strategy
 
-  user = User.objects.first()
-  uniq_strategies = Strategy.objects.distinct('rsi_time')
+  # user = User.objects.first()
+  # uniq_strategies = Strategy.objects.distinct('rsi_time')
 
-  for strategy in uniq_strategies:
-    if not is_task_active_or_scheduled('bot.tasks.register_webhook', [user.client_id, user.client_secret, strategy.rsi_time, strategy.coin_id.name]):
-      print(f"Registering webhook for {strategy.coin_id.name} at {strategy.rsi_time} interval")
-      register_webhook.delay(
-        user.client_id,
-        user.client_secret,
-        strategy.rsi_time,
-        strategy.coin_id.name
-      )
+  # for strategy in uniq_strategies:
+  #   if not is_task_active_or_scheduled('bot.tasks.register_webhook', [user.client_id, user.client_secret, strategy.rsi_time, strategy.coin_id.name]):
+  #     print(f"Registering webhook for {strategy.coin_id.name} at {strategy.rsi_time} interval")
+  #     register_webhook.delay(
+  #       user.client_id,
+  #       user.client_secret,
+  #       strategy.rsi_time,
+  #       strategy.coin_id.name
+  #     )
 
 def is_task_running(task_name, task_args):
   i = app.control.inspect()

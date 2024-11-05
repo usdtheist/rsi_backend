@@ -90,19 +90,14 @@ def start_trading(rsi_6, rsi_14, interval, symbol):
         order = binance_client.buySymbol(symbol, strategy)
       elif signal == 'SELL':
         binance_client = SellClient(user.client_id, user.client_secret)
-        db_orders = Order.objects.filter(
-          user_strategy=strategy,
-          order_type='BUY',
-          parent__isnull=True,
-        )
         print('Selling order for user {user.id}')
-        order = binance_client.sellSymbol(symbol, strategy, db_orders)
+        order = binance_client.sellSymbol(symbol, strategy)
         print('-----------------------------------------------')
         print(f"Sell Order for user {user.id}: {order}")
         print('-----------------------------------------------')
       else:
         order = {}
-
+ 
       print(f"Order for user {user.id}: {order}")
 
   print("---------------------------------------------------------------- Processed")

@@ -52,8 +52,6 @@ class UserStrategy(models.Model):
   enabled = models.BooleanField(default=True)
   purchased = models.BooleanField(null=False, default=False)
   purchased_at = models.DateTimeField(null=True)
-  sale = models.BooleanField(null=False, default=False)
-  sale_at = models.DateTimeField(null=True)
   amount = models.FloatField(null=False, default=0)
   
   class Meta:

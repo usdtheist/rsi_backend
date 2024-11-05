@@ -9,6 +9,7 @@ from api.models import UserStrategy, Coin
 from bot.serializers import OrderSerializer, TradeSerializer
 from bot.filters import OrderFilter
 from bot.binance.buy_client import BuyClient
+from bot.binance.sell_client import SellClient
 from rest_framework.permissions import IsAuthenticated
 
 class OrderViewSet(viewsets.ModelViewSet):
@@ -79,9 +80,27 @@ class TradeViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
     coin = Coin.objects.get(id=request.query_params['coin_id'])
 
     binance_client = BuyClient(user.client_id, user.client_secret)
-    order = binance_client.buySymbol(coin.name, user_strategy)
+    response = binance_client.buySymbol(coin.name, user_strategy)
 
-    if not order:
-      return Response('Unable to buy Coin from Binance. Invalid error from Binance', status=422)
+    if not response['success']:
+      return Response(response['error'], status=422)
 
-    return Response(order, status=status.HTTP_200_OK)
+    serializer = OrderSerializer(response['order'])
+    return Response(serializer.data, status=status.HTTP_200_OK)
+  
+  @action(detail=False, methods=['get'], url_path='sell')
+  def sell(self, request, *args, **kwargs):
+    print(request.query_params)
+    user = self.request.user
+    user_strategy = UserStrategy.objects.get(id=request.query_params['user_strategy_id'])
+    coin = Coin.objects.get(id=request.query_params['coin_id'])
+
+    binance_client = SellClient(user.client_id, user.client_secret)
+    response = binance_client.sellSymbol(coin.name, user_strategy)
+   
+    if not response['success']:
+        return Response(response['error'], status=422)
+
+    serializer = OrderSerializer(response['order'])
+    return Response(serializer.data, status=status.HTTP_200_OK)
+ 

@@ -1,4 +1,5 @@
 from django.db import models
+from api.models import User
 
 class Order(models.Model):
   CHOICES =  [
@@ -18,3 +19,10 @@ class Order(models.Model):
   created_at = models.DateTimeField(auto_now_add=True)
   updated_at = models.DateTimeField(auto_now=True)
   parent = models.ForeignKey('self', on_delete=models.SET_NULL, null=True, blank=True, related_name='sell_order')
+  status = models.CharField(max_length=20, null=False, default='pending')
+  user = models.ForeignKey(User, on_delete=models.DO_NOTHING, null=True)
+
+  def save(self, *args, **kwargs):
+    if not self.user:
+      self.user = self.user_strategy.user_id
+    super().save(*args, **kwargs)

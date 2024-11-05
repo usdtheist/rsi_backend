@@ -21,23 +21,19 @@ class BinanceClient(Client):
 
     return None
 
-  def create_db_order(self, order, user_strategy, amount=None, parentOrders=None):
+  def create_db_order(self, order, user_strategy, amount=None, buyOrder=None):
     from bot.models import Order
 
     if order['side'].lower() == 'buy':
       user_strategy.purchased = True
       user_strategy.purchased_at = timezone.now()
-      user_strategy.sale = False
-      user_strategy.sale_at = None
       user_strategy.save()
     elif order['side'].lower() == 'sell':
-      user_strategy.sale = True
-      user_strategy.sale_at = timezone.now()
       user_strategy.purchased = False
       user_strategy.purchased_at = None
       user_strategy.save()
 
-    db_order = Order.objects.create(
+    sell_order = Order.objects.create(
       external_id=order['orderId'],
       order_type=order['side'],
       amount=amount,
@@ -45,12 +41,13 @@ class BinanceClient(Client):
       price_unit=order['fills'][0]['price'],
       quantity=order['origQty'],
       commission=sum([float(fill['commission']) for fill in order['fills']]),
-      external_response = order
+      external_response = order,
+      status='pending' if order['side'].lower() == 'buy' else 'completed'
     )
 
-    if parentOrders:
-      for order in parentOrders:
-        order.parent = db_order
-        order.save()
+    if buyOrder:
+      buyOrder.parent = sell_order
+      buyOrder.status = 'completed'
+      buyOrder.save()
 
-    print(db_order)
+    return sell_order
