@@ -45,7 +45,7 @@ class WebSocketClient:
         print(f"====================================================>>>>>>>>    THE RSI 6: {rsi_6} of {self.coin}({self.interval})")
         print(f"====================================================>>>>>>>>    THE RSI 14: {rsi_14} of {self.coin}({self.interval})")
 
-        start_trading(rsi_6, rsi_14, self.interval, self.coin)
+        # start_trading(rsi_6, rsi_14, self.interval, self.coin)
 
     except Exception as e:
       print(f"Error processing message: {e}")
