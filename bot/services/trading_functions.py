@@ -58,8 +58,7 @@ def fetch_strategeis_for_sell(interval, symbol, rsi_6, rsi_14):
     enabled=True,
     strategy_id__rsi_time=interval,
     strategy_id__coin_id__name=symbol,
-    purchased=True,
-    sale=False
+    purchased=True
   ).filter(
     Q(strategy_id__rsi_type="6", strategy_id__sell_at__lte=rsi_6) |
     Q(strategy_id__rsi_type="14", strategy_id__sell_at__lte=rsi_14)
@@ -83,7 +82,7 @@ def start_trading(rsi_6, rsi_14, interval, symbol):
       print(f"Strategy:   {strategy.strategy_id.coin_id.name}: {user.email}: {strategy.strategy_id.name}")
       print(f"start order for user {user.id}")
       print(f"User is eligible for BUY: {strategy.purchased == False and signal == 'BUY'}")
-      print(f"User is eligible for SELL: {strategy.purchased == True and strategy.sale == False and signal == 'SELL'}")
+      print(f"User is eligible for SELL: {strategy.purchased == True and signal == 'SELL'}")
 
       if signal == 'BUY':
         binance_client = BuyClient(user.client_id, user.client_secret)
