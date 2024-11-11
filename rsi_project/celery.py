@@ -32,7 +32,7 @@ def at_startup(sender, **kwargs):
   from api.models import User, Strategy
 
   user = User.objects.first()
-  uniq_strategies = Strategy.objects.filter(coin_id__name="CETUSUSDT", rsi_time='2h').distinct('rsi_time')
+  uniq_strategies = Strategy.objects.distinct('rsi_time')
 
   for strategy in uniq_strategies:
     print(f"Registering webhook for {strategy.coin_id.name} at {strategy.rsi_time} interval")
