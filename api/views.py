@@ -6,7 +6,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework_simplejwt.tokens import RefreshToken
 from django_filters.rest_framework import DjangoFilterBackend
-from api.filters import UserStrategyFilter
+from api.filters import UserStrategyFilter, StrategyFilter
 from .models import User, Strategy, UserStrategy, Coin
 from .serializers import CoinSerializer, StrategySerializer, UserSerializer, UserStrategySerializer, CustomTokenObtainPairSerializer, UserRegistrationSerializer
 
@@ -68,6 +68,8 @@ class StrategyViewSet(viewsets.ModelViewSet):
 
     queryset = Strategy.objects.all().order_by('id')
     serializer_class = StrategySerializer
+    filter_backends = [DjangoFilterBackend]
+    filterset_class = StrategyFilter
 
     @action(detail=False, methods=['post'], url_path='bulk')
     def bulk_update(self, request):

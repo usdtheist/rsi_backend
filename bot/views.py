@@ -55,7 +55,7 @@ class TradeViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
     if strategy_id:
       queryset = queryset.filter(user_strategy_id=strategy_id)
     if user_id:
-      queryset = queryset.filter(user_strategy_id__user_id=user_id)
+      queryset = queryset.filter(user_id=user_id)
 
     return queryset
 
