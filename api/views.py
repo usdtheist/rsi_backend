@@ -6,7 +6,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework_simplejwt.tokens import RefreshToken
 from django_filters.rest_framework import DjangoFilterBackend
-from api.filters import UserStrategyFilter, StrategyFilter
+from api.filters import UserStrategyFilter, StrategyFilter, CoinFilter
 from .models import User, Strategy, UserStrategy, Coin
 from .serializers import CoinSerializer, StrategySerializer, UserSerializer, UserStrategySerializer, CustomTokenObtainPairSerializer, UserRegistrationSerializer
 
@@ -60,8 +60,10 @@ class UserViewSet(viewsets.ModelViewSet):
 class CoinViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
 
-    queryset = Coin.objects.all()
+    queryset = Coin.objects.all().distinct()
     serializer_class = CoinSerializer
+    filter_backends = [DjangoFilterBackend]
+    filterset_class = CoinFilter
 
 class StrategyViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]

@@ -26,13 +26,21 @@ class User(AbstractBaseUser, PermissionsMixin):
 
 class Coin(models.Model):
   id = models.AutoField(primary_key=True)
-  name = models.CharField(max_length=50)
+  name = models.CharField(max_length=50, unique=True)
+  asset = models.CharField(max_length=50, default='USDT')
+  base_name = models.CharField(max_length=50, default='W')
   min_value = models.FloatField(null=True, default=0)
   recommended = models.BooleanField(default=False)
+  enabled = models.BooleanField(default=False)
+
+  class Meta:
+    indexes = [
+      models.Index(fields=["name"]),
+    ]
 
 class Strategy(models.Model):
   id = models.AutoField(primary_key=True)
-  name = models.CharField(max_length=50)
+  name = models.CharField(max_length=50, unique=True)
   coin_id = models.ForeignKey(Coin, on_delete=models.CASCADE, related_name='strategies')
   rsi_type = models.IntegerField(null=False)
   rsi_time = models.CharField(max_length=10, null=False, default='1m')

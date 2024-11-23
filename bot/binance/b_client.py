@@ -11,6 +11,19 @@ class BinanceClient(Client):
     print(f"The current price of {symbol} is {price_resp} USD")
     return float(price_resp['price'])
 
+  def get_coins(self):
+    exchange_info = self.get_exchange_info()
+    return [
+      {
+        'name': coin['symbol'],
+        'base_name': coin['baseAsset'],
+        'asset': coin['quoteAsset'],
+      }
+
+      for coin in exchange_info['symbols']
+      if coin['quoteAsset'] == 'USDT'
+    ]
+
   def get_min_notional(self, symbol):
     exchange_info = self.get_exchange_info()
     for s in exchange_info['symbols']:

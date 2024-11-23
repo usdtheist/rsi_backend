@@ -67,7 +67,7 @@ class TradeViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
   @action(detail=False, methods=['get'], url_path='count')
   def count(self, request, *args, **kwargs):
     queryset = self.get_queryset()
-    
+
     total_profit_or_loss = queryset.aggregate(total_profit_or_loss=Sum('profit_or_loss'))
     total_investment = queryset.aggregate(total_investment=Sum(F('amount')))
     return Response({'total': total_profit_or_loss, 'total_investment': total_investment})

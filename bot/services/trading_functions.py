@@ -1,7 +1,6 @@
 from bot.binance.buy_client import BuyClient
 from bot.binance.sell_client import SellClient
 from api.models import UserStrategy
-from bot.models import Order
 from django.db.models import Q
 
 def generate_signals(rsi_value_6, rsi_value_14):

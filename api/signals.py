@@ -10,7 +10,9 @@ from api.tasks import setup_user, setup_coin_strategies
 @receiver(pre_save, sender=Coin)
 def before_save_coin(sender, instance, **kwargs):
   user = User.objects.first()
-  
+  if instance.min_value:
+    return
+
   binance_client = BinanceClient(user.client_id, user.client_secret)
   min_notional = binance_client.get_min_notional(instance.name.upper())
 
@@ -26,7 +28,7 @@ def after_save_user(sender, instance, created, **kwargs):
 
 @receiver(post_save, sender=Coin)
 def after_save_coin(sender, instance, created, **kwargs):
-  if created:
+  if not Strategy.objects.filter(coin_id__id=instance.id).exists():
     setup_coin_strategies.delay(instance.id)
 
 @receiver(pre_save, sender=UserStrategy)
