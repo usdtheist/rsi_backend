@@ -22,3 +22,4 @@ class TradeSerializer(serializers.Serializer):
   sell_commission = serializers.DecimalField(max_digits=20, decimal_places=8)
   profit_or_loss = serializers.DecimalField(max_digits=20, decimal_places=8)
   strategy_name  = serializers.CharField()
+  coin = serializers.CharField()

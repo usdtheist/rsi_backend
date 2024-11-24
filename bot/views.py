@@ -27,6 +27,7 @@ class TradeViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
                   order_type='BUY',
                 ).annotate(
                   strategy_name=F('user_strategy_id__strategy_id__name'),
+                  coin=F('user_strategy_id__strategy_id__coin_id__name'),
                   buy_amount=F('amount'),
                   buy_id=F('id'),
                   buy_date=F('created_at'),
@@ -47,7 +48,8 @@ class TradeViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
                 ).order_by('-created_at'
                 ).values(
                   'buy_id', 'sell_id', 'buy_date', 'sell_date', 'buy_price', 'sell_price', 'buy_quantity', 'sell_quantity', 'profit_or_loss',
-                  'buy_commission', 'sell_price', 'buy_strategy_id', 'sell_strategy_id', 'sell_commission', 'buy_amount', 'strategy_name'
+                  'buy_commission', 'sell_price', 'buy_strategy_id', 'sell_strategy_id', 'sell_commission', 'buy_amount', 'strategy_name',
+                  'coin'
                 )
 
     strategy_id = self.request.query_params.get('strategy_id', None)
@@ -99,7 +101,7 @@ class TradeViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
     response = binance_client.sellSymbol(coin.name, user_strategy)
    
     if not response['success']:
-        return Response(response['error'], status=422)
+      return Response(response['error'], status=422)
 
     serializer = OrderSerializer(response['order'])
     return Response(serializer.data, status=status.HTTP_200_OK)

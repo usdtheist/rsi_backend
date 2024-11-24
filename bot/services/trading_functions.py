@@ -1,7 +1,6 @@
-from bot.binance.buy_client import BuyClient
-from bot.binance.sell_client import SellClient
 from api.models import UserStrategy
 from django.db.models import Q
+from bot.services.binance_trading import BinanceTrading
 
 def generate_signals(rsi_value_6, rsi_value_14):
   signal = 'HOLD'
@@ -50,7 +49,7 @@ def fetch_strategies_for_buy(interval, symbol, rsi_6, rsi_14):
     Q(strategy_id__rsi_type="6", strategy_id__buy_at__gte=rsi_6) |
     Q(strategy_id__rsi_type="14", strategy_id__buy_at__gte=rsi_14)
   ).distinct()
-  
+
 def fetch_strategeis_for_sell(interval, symbol, rsi_6, rsi_14):
   return UserStrategy.objects.filter(
     user_id__active=True,
@@ -76,27 +75,7 @@ def start_trading(rsi_6, rsi_14, interval, symbol):
   print("Processing ----------------------------------------------------------------")
 
   if strategies:
-    for strategy in strategies:
-      user = strategy.user_id
-      print(f"Strategy:   {strategy.strategy_id.coin_id.name}: {user.email}: {strategy.strategy_id.name}")
-      print(f"start order for user {user.id}")
-      print(f"User is eligible for BUY: {strategy.purchased == False and signal == 'BUY'}")
-      print(f"User is eligible for SELL: {strategy.purchased == True and signal == 'SELL'}")
-
-      if signal == 'BUY':
-        binance_client = BuyClient(user.client_id, user.client_secret)
-        order = binance_client.buySymbol(symbol, strategy)
-      elif signal == 'SELL':
-        binance_client = SellClient(user.client_id, user.client_secret)
-        print('Selling order for user {user.id}')
-        order = binance_client.sellSymbol(symbol, strategy)
-        print('-----------------------------------------------')
-        print(f"Sell Order for user {user.id}: {order}")
-        print('-----------------------------------------------')
-      else:
-        order = {}
- 
-      print(f"Order for user {user.id}: {order}")
+    BinanceTrading(strategies, signal, symbol)
 
   print("---------------------------------------------------------------- Processed")
   return strategies
