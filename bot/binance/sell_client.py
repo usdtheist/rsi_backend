@@ -31,7 +31,7 @@ class SellClient(BinanceClient):
 
       db_order = self.create_db_order(order, strategy, amount=None, buyOrder=db_order)
       return {"success": True, "order": db_order}
-    
+
     except BinanceOrderException as e:
       db_order.status = 'pending'
       db_order.save()
