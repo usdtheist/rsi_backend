@@ -54,10 +54,13 @@ class TradeViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
 
     strategy_id = self.request.query_params.get('strategy_id', None)
     user_id = self.request.query_params.get('user_id', None)
+    coin_id = self.request.query_params.get('coin_id', None)
     if strategy_id:
       queryset = queryset.filter(user_strategy_id=strategy_id)
     if user_id:
       queryset = queryset.filter(user_id=user_id)
+    if coin_id:
+      queryset = queryset.filter(user_strategy_id__strategy_id__coin_id=coin_id)
 
     return queryset
 
