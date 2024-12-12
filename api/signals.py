@@ -31,6 +31,10 @@ def after_save_coin(sender, instance, created, **kwargs):
   if not Strategy.objects.filter(coin_id__id=instance.id).exists():
     setup_coin_strategies.delay(instance.id)
 
+@receiver(post_save, sender=Strategy)
+def after_save_strategy(sender, instance, **kwargs):
+  UserStrategy.objects.filter(strategy_id=instance, user_id__auto_recommended=True).update(enabled=instance.recommended)
+
 @receiver(pre_save, sender=UserStrategy)
 def before_save_user_strategy(sender, instance, **kwargs):
   if instance.enabled and instance.amount < instance.strategy_id.coin_id.min_value:

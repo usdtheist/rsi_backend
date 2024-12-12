@@ -15,6 +15,7 @@ class User(AbstractBaseUser, PermissionsMixin):
   date_joined = models.DateTimeField(auto_now_add=True)
   payment_receipt_url = models.URLField(blank=True, null=True)
   approved_at = models.DateTimeField(null=True, blank=True)
+  auto_recommended = models.BooleanField(default=False)
 
   USERNAME_FIELD = "email"
   REQUIRED_FIELDS = []

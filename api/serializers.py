@@ -48,7 +48,7 @@ class UserSerializer(serializers.ModelSerializer):
 
   class Meta:
     model = User
-    fields = ['id', 'full_name', 'email', 'active', 'active', 'client_id', 'client_secret', 'is_staff', 'payment_receipt_url', 'approved_at', 'role', 'date_joined']
+    fields = ['id', 'full_name', 'email', 'active', 'active', 'client_id', 'client_secret', 'is_staff', 'payment_receipt_url', 'approved_at', 'role', 'date_joined', 'auto_recommended']
 
   def get_role(self, obj):
       return 'Admin' if obj.is_staff else 'User'
@@ -61,6 +61,7 @@ class UserSerializer(serializers.ModelSerializer):
     instance.approved_at = validated_data.get('approved_at', instance.approved_at)
     instance.client_id = validated_data.get('client_id', instance.client_id)
     instance.client_secret = validated_data.get('client_secret', instance.client_secret)
+    instance.auto_recommended = validated_data.get('auto_recommended', instance.auto_recommended)
     instance.save()
 
     return instance
