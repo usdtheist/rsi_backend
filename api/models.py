@@ -48,6 +48,7 @@ class Strategy(models.Model):
   buy_at = models.IntegerField(null=False, default=30)
   sell_at = models.IntegerField(null=False, default=70)
   recommended = models.BooleanField(default=False)
+  order = models.IntegerField(null=True)
 
   class Meta:
     constraints = [
@@ -64,6 +65,7 @@ class UserStrategy(models.Model):
   amount = models.FloatField(null=False, default=0)
   
   class Meta:
+    ordering = ['strategy_id__order']
     constraints = [
       models.UniqueConstraint(fields=['user_id','strategy_id'], name='unique_user_strategy_id')
     ]

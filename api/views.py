@@ -87,7 +87,7 @@ class StrategyViewSet(viewsets.ModelViewSet):
 class UserStrategyViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
 
-    queryset = UserStrategy.objects.all().order_by('id')
+    queryset = UserStrategy.objects.all()
     serializer_class = UserStrategySerializer
     filter_backends = [DjangoFilterBackend]
     filterset_class = UserStrategyFilter
