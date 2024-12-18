@@ -99,8 +99,5 @@ class UserStrategyViewSet(viewsets.ModelViewSet):
         order = Order.objects.filter(user_strategy__id=user_strategy.id, order_type='BUY', parent__isnull=True)
         order.delete()
 
-        user_strategy.purchased = False
-        user_strategy.save()
-
         user_strategy_serializer = UserStrategySerializer(user_strategy).data
         return Response(user_strategy_serializer)

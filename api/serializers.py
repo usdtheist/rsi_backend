@@ -82,7 +82,11 @@ class UserStrategySerializer(serializers.ModelSerializer):
   rsi_time = serializers.CharField(source='strategy_id.rsi_time', read_only=True)
   buy_at = serializers.CharField(source='strategy_id.buy_at', read_only=True)
   recommended = serializers.BooleanField(source='strategy_id.recommended', read_only=True)
+  purchased = serializers.SerializerMethodField()
 
   class Meta:
     model = UserStrategy
     fields = '__all__'
+
+  def get_purchased(self, obj):
+    return obj.purchased()

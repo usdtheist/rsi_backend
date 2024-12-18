@@ -60,8 +60,6 @@ class UserStrategy(models.Model):
   user_id = models.ForeignKey(User, on_delete=models.CASCADE, related_name='user_strategies')
   strategy_id = models.ForeignKey(Strategy, on_delete=models.CASCADE, related_name='user_strategies')
   enabled = models.BooleanField(default=True)
-  purchased = models.BooleanField(null=False, default=False)
-  purchased_at = models.DateTimeField(null=True)
   amount = models.FloatField(null=False, default=0)
   
   class Meta:
@@ -69,3 +67,12 @@ class UserStrategy(models.Model):
     constraints = [
       models.UniqueConstraint(fields=['user_id','strategy_id'], name='unique_user_strategy_id')
     ]
+
+  def purchased(self):
+    from bot.models import Order
+
+    return Order.objects.filter(
+      user_strategy_id=self.id,
+      order_type='BUY',
+      parent_id__isnull=True
+    ).exists()
