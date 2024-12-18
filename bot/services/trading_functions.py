@@ -1,5 +1,6 @@
 from api.models import UserStrategy
-from django.db.models import Q
+from django.db.models import Q, Exists, OuterRef
+from bot.models import Order
 from bot.services.binance_trading import BinanceTrading
 
 def generate_signals(rsi_value_6, rsi_value_14):
@@ -43,11 +44,20 @@ def fetch_strategies_for_buy(interval, symbol, rsi_6, rsi_14):
     user_id__active=True,
     enabled=True,
     strategy_id__rsi_time=interval,
-    strategy_id__coin_id__name=symbol,
-    purchased=False
+    strategy_id__coin_id__name=symbol
+  ).annotate(
+    purchased=Exists(
+      Order.objects.filter(
+        user_strategy__id=OuterRef('id'),
+        order_type='BUY',
+        parent_id__isnull=True
+      )
+    )
   ).filter(
     Q(strategy_id__rsi_type="6", strategy_id__buy_at__gte=rsi_6) |
     Q(strategy_id__rsi_type="14", strategy_id__buy_at__gte=rsi_14)
+  ).filter(
+    purchased=False
   ).distinct()
 
 def fetch_strategeis_for_sell(interval, symbol, rsi_6, rsi_14):
@@ -55,7 +65,16 @@ def fetch_strategeis_for_sell(interval, symbol, rsi_6, rsi_14):
     user_id__active=True,
     enabled=True,
     strategy_id__rsi_time=interval,
-    strategy_id__coin_id__name=symbol,
+    strategy_id__coin_id__name=symbol
+  ).annotate(
+    purchased=Exists(
+      Order.objects.filter(
+        user_strategy_id=OuterRef('id'),
+        order_type='BUY',
+        parent_id__isnull=True
+      )
+    )
+  ).filter(
     purchased=True
   ).filter(
     Q(strategy_id__rsi_type="6", strategy_id__sell_at__lte=rsi_6) |

@@ -37,15 +37,6 @@ class BinanceClient(Client):
   def create_db_order(self, order, user_strategy, amount=None, buyOrder=None):
     from bot.models import Order
 
-    if order['side'].lower() == 'buy':
-      user_strategy.purchased = True
-      user_strategy.purchased_at = timezone.now()
-      user_strategy.save()
-    elif order['side'].lower() == 'sell':
-      user_strategy.purchased = False
-      user_strategy.purchased_at = None
-      user_strategy.save()
-
     sell_order = Order.objects.create(
       external_id=order['orderId'],
       order_type=order['side'],
