@@ -40,7 +40,7 @@ class UserViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
     serializer_class = UserSerializer
     queryset = User.objects.all()
-    
+
     def get_queryset(self):
         user = self.request.user
         queryset = User.objects.all().distinct() if user.is_staff else User.objects.filter(id=user.id)

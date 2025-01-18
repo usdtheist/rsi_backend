@@ -2,6 +2,7 @@ from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin
 from django.db import models
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
+from django.utils.crypto import get_random_string
 from .managers import CustomUserManager
 
 class User(AbstractBaseUser, PermissionsMixin):
@@ -16,12 +17,20 @@ class User(AbstractBaseUser, PermissionsMixin):
   payment_receipt_url = models.URLField(blank=True, null=True)
   approved_at = models.DateTimeField(null=True, blank=True)
   auto_recommended = models.BooleanField(default=False)
+  referral_code = models.CharField(max_length=20, null=True, blank=True)
+  phone_number = models.CharField(max_length=16, null=True, blank=True)
+  whatsapp_number = models.CharField(max_length=16, null=True, blank=True)
 
   USERNAME_FIELD = "email"
   REQUIRED_FIELDS = []
-  
+
   objects = CustomUserManager()
-  
+
+  def save(self, *args, **kwargs):
+    if not self.referral_code:
+      self.referral_code = get_random_string(10, allowed_chars='ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789')
+    super().save(*args, **kwargs)
+
   def __str__(self):
     return self.email
 
