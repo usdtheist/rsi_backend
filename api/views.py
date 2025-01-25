@@ -9,7 +9,7 @@ from django_filters.rest_framework import DjangoFilterBackend
 from api.filters import UserStrategyFilter, StrategyFilter, CoinFilter
 from .models import User, Strategy, UserStrategy, Coin
 from bot.models import Order
-from .serializers import CoinSerializer, StrategySerializer, UserSerializer, UserStrategySerializer, CustomTokenObtainPairSerializer, UserRegistrationSerializer
+from .serializers import CoinSerializer, StrategySerializer, UserSerializer, UserStrategySerializer, CustomTokenObtainPairSerializer, UserRegistrationSerializer, PasswordChangeSerializer
 
 class CustomTokenObtainPairView(TokenObtainPairView):
     serializer_class = CustomTokenObtainPairSerializer
@@ -35,6 +35,18 @@ class LogoutView(APIView):
             return Response({"message": "Logged out successfully"}, status=status.HTTP_205_RESET_CONTENT)
         except Exception as e:
             return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+class PasswordChangeView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, *args, **kwargs):
+        serializer = PasswordChangeSerializer(data=request.data, context={'request': request})
+        if serializer.is_valid():
+            user = request.user
+            user.set_password(serializer.validated_data['new_password'])
+            user.save()
+            return Response({"message": "Password changed successfully."}, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class UserViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]

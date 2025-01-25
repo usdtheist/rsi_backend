@@ -15,6 +15,7 @@ class User(AbstractBaseUser, PermissionsMixin):
   client_id = models.CharField(max_length=100, null=True, blank=True)
   date_joined = models.DateTimeField(auto_now_add=True)
   payment_receipt_url = models.URLField(blank=True, null=True)
+  profile_image_url = models.URLField(blank=True, null=True)
   approved_at = models.DateTimeField(null=True, blank=True)
   auto_recommended = models.BooleanField(default=False)
   referral_code = models.CharField(max_length=20, null=True, blank=True)

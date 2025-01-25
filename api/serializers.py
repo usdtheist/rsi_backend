@@ -14,6 +14,11 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
     model = User
     fields = ['email', 'full_name', 'password']
 
+  def validate_password(self, value):
+    if len(value) < 5:
+      raise serializers.ValidationError("Password must be at least 6 characters long.")
+    return value
+
   def create(self, validated_data):
     user = User.objects.create(
       email=validated_data['email'],
@@ -50,7 +55,7 @@ class UserSerializer(serializers.ModelSerializer):
     model = User
     fields = ['id', 'full_name', 'email', 'phone_number', 'whatsapp_number', 'active', 'active',
               'client_id', 'client_secret', 'is_staff', 'payment_receipt_url', 'approved_at',
-              'role', 'date_joined', 'auto_recommended', 'referral_code'
+              'role', 'date_joined', 'auto_recommended', 'referral_code', 'profile_image_url'
               ]
 
   def get_role(self, obj):
@@ -65,9 +70,29 @@ class UserSerializer(serializers.ModelSerializer):
     instance.client_id = validated_data.get('client_id', instance.client_id)
     instance.client_secret = validated_data.get('client_secret', instance.client_secret)
     instance.auto_recommended = validated_data.get('auto_recommended', instance.auto_recommended)
+    instance.referral_code = validated_data.get('referral_code', instance.referral_code)
+    instance.profile_image_url = validated_data.get('profile_image_url', instance.profile_image_url)
+    instance.phone_number = validated_data.get('phone_number', instance.phone_number)
+    instance.whatsapp_number = validated_data.get('whatsapp_number', instance.whatsapp_number)
+
     instance.save()
 
     return instance
+
+class PasswordChangeSerializer(serializers.Serializer):
+  old_password = serializers.CharField(required=True)
+  new_password = serializers.CharField(required=True)
+
+  def validate_old_password(self, value):
+    user = self.context['request'].user
+    if not user.check_password(value):
+      raise serializers.ValidationError("Old password is incorrect.")
+    return value
+
+  def validate_new_password(self, value):
+    if len(value) < 5:
+      raise serializers.ValidationError("Password must be at least 6 characters long.")
+    return value
 
 class CoinSerializer(serializers.ModelSerializer):
   class Meta:
