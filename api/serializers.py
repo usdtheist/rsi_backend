@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import User, Coin, Strategy, UserStrategy
+from .models import User, Coin, Strategy, UserStrategy, Referrals
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from django.contrib.auth import authenticate
 from django.contrib.auth import get_user_model
@@ -12,7 +12,7 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
 
   class Meta:
     model = User
-    fields = ['email', 'full_name', 'password']
+    fields = ['email', 'full_name', 'password', 'referral_code', 'phone_number']
 
   def validate_password(self, value):
     if len(value) < 5:
@@ -26,6 +26,18 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
     )
     user.set_password(validated_data['password'])
     user.save()
+
+    if validated_data['referral_code']:
+      try:
+        referrer = User.objects.get(referral_code=validated_data['referral_code'])
+        Referrals.objects.create(
+          code=validated_data['referral_code'],
+          referred_user=user,
+          referrer=referrer,
+        )
+
+      except User.DoesNotExist:
+        pass
 
     return user
 

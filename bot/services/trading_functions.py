@@ -1,4 +1,4 @@
-from api.models import UserStrategy
+from api.models import UserStrategy, Strategy
 from django.db.models import Q, Exists, OuterRef
 from bot.models import Order
 from bot.services.binance_trading import BinanceTrading
@@ -98,3 +98,26 @@ def start_trading(rsi_6, rsi_14, interval, symbol):
 
   print("---------------------------------------------------------------- Processed")
   return strategies
+
+def sell_everything(db_coin):
+  user_strategies = UserStrategy.objects.filter(
+    user_id__active=True,
+    strategy_id__coin_id__name=db_coin.name
+  ).annotate(
+    purchased=Exists(
+      Order.objects.filter(
+        user_strategy_id=OuterRef('id'),
+        order_type='BUY',
+        parent_id__isnull=True
+      )
+    )
+  ).filter(
+    purchased=True
+  ).distinct()
+
+  if user_strategies:
+    BinanceTrading(user_strategies, 'SELL', db_coin.name)
+
+  strategies = Strategy.objects.filter(coin_id=db_coin)
+
+  strategies.update(recommended=False)

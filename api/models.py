@@ -35,6 +35,19 @@ class User(AbstractBaseUser, PermissionsMixin):
   def __str__(self):
     return self.email
 
+class Referrals(models.Model):
+  code = models.CharField(max_length=20, null=False)
+  referred_user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="referred_user")
+  referrer = models.ForeignKey(User, on_delete=models.CASCADE, related_name="referral_history")
+
+  payment_status = models.CharField(max_length=10, null=False, blank=True, default='pending')
+  payment_amount = models.DecimalField(max_digits=5, decimal_places=2, null=False, blank=True, default=10.0)
+
+  created_at = models.DateTimeField(auto_now_add=True)
+
+  class Meta:
+    unique_together = ('code', 'referred_user')
+
 class Coin(models.Model):
   id = models.AutoField(primary_key=True)
   name = models.CharField(max_length=50, unique=True)
@@ -43,6 +56,7 @@ class Coin(models.Model):
   min_value = models.FloatField(null=True, default=0)
   recommended = models.BooleanField(default=False)
   enabled = models.BooleanField(default=False)
+  bottom_value = models.DecimalField(null=False, default=0.0, max_digits=10, decimal_places=5)
 
   class Meta:
     indexes = [
@@ -71,7 +85,7 @@ class UserStrategy(models.Model):
   strategy_id = models.ForeignKey(Strategy, on_delete=models.CASCADE, related_name='user_strategies')
   enabled = models.BooleanField(default=True)
   amount = models.FloatField(null=False, default=0)
-  
+
   class Meta:
     ordering = ['strategy_id__order']
     constraints = [
