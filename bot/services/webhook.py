@@ -43,7 +43,7 @@ class WebSocketClient:
 
       if self.db_coin.bottom_value > Decimal(close):
         print('-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-')
-        print('db value', self.db_coin.bottom_value, 'coin value', Decimal(close))
+        print('db value', self.db_coin.bottom_value, 'coin value', Decimal(close), 'boolean', self.db_coin.bottom_value > Decimal(close))
         print('-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-')
         sell_everything(self.db_coin)
       elif len(self.closes) >= RSI_PERIOD:
