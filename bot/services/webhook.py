@@ -4,7 +4,7 @@ import ssl
 import asyncio
 import logging
 from bot.services.trading_functions import start_trading, calculate_rsi, sell_everything
-
+from decimal import Decimal
 from api.models import Coin
 
 RSI_PERIOD = 14
@@ -41,7 +41,7 @@ class WebSocketClient:
         print(f"Candle open at: {close}")
         self.opens = [float(close)]
 
-      if self.db_coin.bottom_value > close:
+      if self.db_coin.bottom_value > Decimal(close):
         sell_everything(self.db_coin)
       elif len(self.closes) >= RSI_PERIOD:
         rsi_6 = round(calculate_rsi(self.closes + self.opens, window=6), 2)
