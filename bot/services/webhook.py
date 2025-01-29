@@ -41,7 +41,7 @@ class WebSocketClient:
         print(f"Candle open at: {close}")
         self.opens = [float(close)]
 
-      if self.db_coin.bottom_value > Decimal(close):
+      if Decimal(self.db_coin.bottom_value) > Decimal(close):
         print('-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-')
         sell_everything(self.db_coin)
         print('-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-')
