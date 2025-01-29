@@ -115,6 +115,8 @@ def sell_everything(db_coin):
     purchased=True
   ).distinct()
 
+  print(user_strategies)
+
   if user_strategies:
     BinanceTrading(user_strategies, 'SELL', db_coin.name)
 
