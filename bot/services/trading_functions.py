@@ -100,6 +100,7 @@ def start_trading(rsi_6, rsi_14, interval, symbol):
   return strategies
 
 def sell_everything(db_coin):
+  print("Selling everything for %s" % db_coin.name)
   user_strategies = UserStrategy.objects.filter(
     user_id__active=True,
     strategy_id__coin_id__name=db_coin.name
@@ -115,7 +116,7 @@ def sell_everything(db_coin):
     purchased=True
   ).distinct()
 
-  print(user_strategies)
+  print('user_strategies: %s' % user_strategies)
 
   if user_strategies:
     BinanceTrading(user_strategies, 'SELL', db_coin.name)

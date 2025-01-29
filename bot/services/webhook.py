@@ -16,7 +16,6 @@ class WebSocketClient:
     self.closes = closes
     self.opens = []
     self.interval = interval
-    self.db_coin = Coin.objects.get(name=coin)
 
   def on_open(self, ws):
     print(f'Opened connection to {self.socket_url}')
@@ -41,7 +40,9 @@ class WebSocketClient:
         print(f"Candle open at: {close}")
         self.opens = [float(close)]
 
-      if Decimal(self.db_coin.bottom_value) > Decimal(close):
+      db_coin = Coin.objects.get(name=self.coin)
+
+      if Decimal(db_coin.bottom_value) > Decimal(close):
         print('-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-')
         sell_everything(self.db_coin)
         print('-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-')
