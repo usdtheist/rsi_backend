@@ -27,6 +27,7 @@ class TradeViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
                   order_type='BUY',
                 ).annotate(
                   strategy_name=F('user_strategy_id__strategy_id__name'),
+                  strategy_id=F('user_strategy_id__strategy_id'),
                   coin=F('user_strategy_id__strategy_id__coin_id__name'),
                   buy_amount=F('amount'),
                   buy_id=F('id'),
@@ -44,19 +45,23 @@ class TradeViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
                   profit_or_loss=ExpressionWrapper(
                     ((F('sell_price') * F('sell_quantity')) - F('sell_commission')) - F('amount'),
                     output_field=DecimalField(max_digits=20, decimal_places=8)
-                  )
+                  ),
+                  profit_or_loss_percentage=ExpressionWrapper(
+                    (F('profit_or_loss') / F('amount')) * 100,
+                    output_field=DecimalField(max_digits=20, decimal_places=8)
+                  ),
                 ).order_by('-created_at'
                 ).values(
                   'buy_id', 'sell_id', 'buy_date', 'sell_date', 'buy_price', 'sell_price', 'buy_quantity', 'sell_quantity', 'profit_or_loss',
                   'buy_commission', 'sell_price', 'buy_strategy_id', 'sell_strategy_id', 'sell_commission', 'buy_amount', 'strategy_name',
-                  'coin'
+                  'coin', 'profit_or_loss_percentage',
                 )
 
     strategy_id = self.request.query_params.get('strategy_id', None)
     user_id = self.request.query_params.get('user_id', None)
     coin_id = self.request.query_params.get('coin_id', None)
     if strategy_id:
-      queryset = queryset.filter(user_strategy_id=strategy_id)
+      queryset = queryset.filter(strategy_id=strategy_id)
     if user_id:
       queryset = queryset.filter(user_id=user_id)
     if coin_id:

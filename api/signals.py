@@ -3,9 +3,8 @@ from django.dispatch import receiver # type: ignore
 from django.core.exceptions import ValidationError # type: ignore
 from api.models import Coin, User, UserStrategy, Strategy
 from bot.binance.b_client import BinanceClient
-from api.services.strategy_creator import StrategyCreator
-from api.services.user_strategy_creator import UserStrategyCreator
 from api.tasks import setup_user, setup_coin_strategies
+from django.core.exceptions import ObjectDoesNotExist
 
 @receiver(pre_save, sender=Coin)
 def before_save_coin(sender, instance, **kwargs):

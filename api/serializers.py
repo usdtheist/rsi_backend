@@ -4,6 +4,7 @@ from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from django.contrib.auth import authenticate
 from django.contrib.auth import get_user_model
 from rest_framework.response import Response
+from bot.binance.b_client import BinanceClient
 
 User = get_user_model()
 
@@ -74,13 +75,28 @@ class UserSerializer(serializers.ModelSerializer):
       return 'Admin' if obj.is_staff else 'User'
 
   def update(self, instance, validated_data):
+    instance.client_id = validated_data.get('client_id', instance.client_id)
+    instance.client_secret = validated_data.get('client_secret', instance.client_secret)
+
+    try:
+      existing_user = User.objects.get(id=instance.id)
+
+      if instance.client_id != existing_user.client_id or instance.client_secret != existing_user.client_secret:
+        binance_client = BinanceClient(instance.client_id, instance.client_secret)
+        print('--------------------------------')
+        print(instance.client_id, instance.client_secret)
+        print('--------------------------------')
+        print(binance_client.fetch_account())
+        print('--------------------------------')
+        binance_client.fetch_account()
+    except Exception:
+      raise serializers.ValidationError("Invalid secrets provided")
+
     instance.is_staff = validated_data.get('is_staff', instance.is_staff)
     instance.full_name = validated_data.get('full_name', instance.full_name)
     instance.active = validated_data.get('active', instance.active)
     instance.payment_receipt_url = validated_data.get('payment_receipt_url', instance.payment_receipt_url)
     instance.approved_at = validated_data.get('approved_at', instance.approved_at)
-    instance.client_id = validated_data.get('client_id', instance.client_id)
-    instance.client_secret = validated_data.get('client_secret', instance.client_secret)
     instance.auto_recommended = validated_data.get('auto_recommended', instance.auto_recommended)
     instance.referral_code = validated_data.get('referral_code', instance.referral_code)
     instance.profile_image_url = validated_data.get('profile_image_url', instance.profile_image_url)
