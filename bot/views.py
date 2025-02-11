@@ -2,8 +2,8 @@ from rest_framework import viewsets, mixins, status
 from rest_framework.response import Response
 from rest_framework.decorators import action
 from django_filters.rest_framework import DjangoFilterBackend
-from django.db.models import Sum, F, ExpressionWrapper, DecimalField
-from django.db.models.functions import Cast
+from django.db.models import Sum, F, ExpressionWrapper, DecimalField, IntegerField, Count, Case, When
+from django.db.models.functions import Cast, Round
 from bot.models import Order
 from api.models import UserStrategy, Coin
 from bot.serializers import OrderSerializer, TradeSerializer
@@ -48,7 +48,7 @@ class TradeViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
                   ),
                   profit_or_loss_percentage=ExpressionWrapper(
                     (F('profit_or_loss') / F('amount')) * 100,
-                    output_field=DecimalField(max_digits=20, decimal_places=8)
+                    output_field=DecimalField(max_digits=20, decimal_places=2)
                   ),
                 ).order_by('-created_at'
                 ).values(
@@ -73,14 +73,67 @@ class TradeViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
     queryset = self.get_queryset()
     serializer = TradeSerializer(queryset, many=True)
     return Response(serializer.data)
-  
+
+  @action(detail=False, methods=['get'], url_path='summary')
+  def summary(self, request, *args, **kwargs):
+    queryset = Order.objects.filter(order_type='BUY')
+
+    # Apply filters based on request parameters
+    strategy_id = self.request.query_params.get('strategy_id', None)
+    user_id = self.request.query_params.get('user_id', None)
+    coin_id = self.request.query_params.get('coin_id', None)
+
+    if strategy_id:
+        queryset = queryset.filter(user_strategy_id__strategy_id=strategy_id)
+    if user_id:
+        queryset = queryset.filter(user_strategy_id__user_id=user_id)
+    if coin_id:
+        queryset = queryset.filter(user_strategy_id__strategy_id__coin_id=coin_id)
+
+    trade_counts = queryset.annotate(
+                      sell_price=Cast(F('parent__price_unit'), DecimalField(max_digits=20, decimal_places=8)),
+                      sell_quantity=Cast(F('parent__quantity'), DecimalField(max_digits=20, decimal_places=8)),
+                      sell_commission=Cast(F('parent__commission'), DecimalField(max_digits=20, decimal_places=8)),
+                      buy_amount=Cast(F('amount'), DecimalField(max_digits=20, decimal_places=8)),
+
+                      # Ensure correct type conversion for profit_or_loss calculation
+                      profit_or_loss=ExpressionWrapper(
+                        ((F('sell_price') * F('sell_quantity')) - F('sell_commission')) - F('buy_amount'),
+                        output_field=DecimalField(max_digits=20, decimal_places=8)
+                      ),
+                    ).aggregate(
+                      positive_trades=Count(
+                        Case(
+                          When(profit_or_loss__gt=0, then=1),
+                          output_field=IntegerField()
+                        )
+                      ),
+                      negative_trades=Count(
+                        Case(
+                          When(profit_or_loss__lt=0, then=1),
+                          output_field=IntegerField()
+                        )
+                      )
+                    )
+
+    return Response(trade_counts)
+
   @action(detail=False, methods=['get'], url_path='count')
   def count(self, request, *args, **kwargs):
     queryset = self.get_queryset()
 
-    total_profit_or_loss = queryset.aggregate(total_profit_or_loss=Sum('profit_or_loss'))
-    total_investment = queryset.aggregate(total_investment=Sum(F('amount')))
-    return Response({'total': total_profit_or_loss, 'total_investment': total_investment})
+    investment = queryset.filter(parent_id__isnull=True).aggregate(total_investment=Sum(F('amount')))
+    total_pnl = queryset.aggregate(total_profit_or_loss=Sum('profit_or_loss'))
+    total_pnl_percentage = queryset.aggregate(total_profit_or_loss_percentage=ExpressionWrapper(
+        (Sum('profit_or_loss') / Sum('buy_amount')) * 100,
+        output_field=DecimalField(max_digits=4, decimal_places=2)
+    ))
+
+    return Response({
+      'total': total_pnl['total_profit_or_loss'],
+      'total_investment': investment['total_investment'],
+      'total_profit_and_loss_percentage': total_pnl_percentage['total_profit_or_loss_percentage']
+    })
 
   @action(detail=False, methods=['get'], url_path='buy')
   def buy(self, request, *args, **kwargs):
@@ -97,7 +150,7 @@ class TradeViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
 
     serializer = OrderSerializer(response['order'])
     return Response(serializer.data, status=status.HTTP_200_OK)
-  
+
   @action(detail=False, methods=['get'], url_path='sell')
   def sell(self, request, *args, **kwargs):
     print(request.query_params)
