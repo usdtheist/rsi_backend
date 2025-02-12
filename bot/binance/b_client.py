@@ -25,15 +25,21 @@ class BinanceClient(Client):
     ]
 
   def fetch_account(self, **params):
+    assets = []
     account_info = self.get_account(**params)
     for balance in account_info["balances"]:
       asset = balance["asset"]
       free = balance["free"]
       locked = balance["locked"]
 
-      if free > 0 or locked > 0:
-        print(f"Asset: {asset}, Free: {free}, Locked: {locked}")
+      if float(free) > 0 or float(locked) > 0:
+        assets.append({
+          'name': asset,
+          'free': free,
+          'locked': locked,
+        })
 
+    return assets
   def get_min_notional(self, symbol):
     exchange_info = self.get_exchange_info()
     for s in exchange_info['symbols']:

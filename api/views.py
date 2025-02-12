@@ -9,6 +9,7 @@ from django_filters.rest_framework import DjangoFilterBackend
 from api.filters import UserStrategyFilter, StrategyFilter, CoinFilter
 from .models import User, Strategy, UserStrategy, Coin
 from bot.models import Order
+from bot.binance.b_client import BinanceClient
 from .serializers import CoinSerializer, StrategySerializer, UserSerializer, UserStrategySerializer, CustomTokenObtainPairSerializer, UserRegistrationSerializer, PasswordChangeSerializer
 
 class CustomTokenObtainPairView(TokenObtainPairView):
@@ -69,6 +70,13 @@ class UserViewSet(viewsets.ModelViewSet):
         if not user.is_staff:
             kwargs['pk'] = user.id
         return super().retrieve(request, *args, **kwargs)
+
+    @action(detail=False, methods=['get'], url_path='balance')
+    def balance(self, request):
+        user = request.user
+        binance_client = BinanceClient(user.client_id, user.client_secret)
+        balance = binance_client.fetch_account()
+        return Response({"balance": balance}, status=status.HTTP_200_OK)
 
 class CoinViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]

@@ -83,11 +83,6 @@ class UserSerializer(serializers.ModelSerializer):
 
       if instance.client_id != existing_user.client_id or instance.client_secret != existing_user.client_secret:
         binance_client = BinanceClient(instance.client_id, instance.client_secret)
-        print('--------------------------------')
-        print(instance.client_id, instance.client_secret)
-        print('--------------------------------')
-        print(binance_client.fetch_account())
-        print('--------------------------------')
         binance_client.fetch_account()
     except Exception:
       raise serializers.ValidationError("Invalid secrets provided")
