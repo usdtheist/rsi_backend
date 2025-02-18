@@ -21,6 +21,7 @@ class User(AbstractBaseUser, PermissionsMixin):
   referral_code = models.CharField(max_length=20, null=True, blank=True)
   phone_number = models.CharField(max_length=16, null=True, blank=True)
   whatsapp_number = models.CharField(max_length=16, null=True, blank=True)
+  wallet_address = models.CharField(max_length=50, null=True, blank=True)
 
   USERNAME_FIELD = "email"
   REQUIRED_FIELDS = []
@@ -73,6 +74,8 @@ class Strategy(models.Model):
   sell_at = models.IntegerField(null=False, default=70)
   recommended = models.BooleanField(default=False)
   order = models.IntegerField(null=True)
+  expected_time = models.CharField(null=False, max_length=20, default="1 hours")
+  expected_percentage = models.CharField(max_length=20, null=False, default="0.25%")
 
   class Meta:
     constraints = [

@@ -36,6 +36,16 @@ def after_save_strategy(sender, instance, **kwargs):
 
 @receiver(pre_save, sender=UserStrategy)
 def before_save_user_strategy(sender, instance, **kwargs):
+  # from channels.layers import get_channel_layer
+  # from asgiref.sync import async_to_sync
+
+  # channel_layer = get_channel_layer()
+  # print('----------------------------------------------------------------')
+  # async_to_sync(channel_layer.group_send)(
+  #       'chat_global_chat',
+  #     {"type": "chat_message", "message": "Hello from Django! Hashim is here"}
+  # )
+  # print('----------------------------------------------------------------')
   if instance.enabled and instance.amount < instance.strategy_id.coin_id.min_value:
     raise ValidationError(f"Minimum amount should be more than {instance.strategy_id.coin_id.min_value}")
 

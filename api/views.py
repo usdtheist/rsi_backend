@@ -6,11 +6,13 @@ from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework_simplejwt.tokens import RefreshToken
 from django_filters.rest_framework import DjangoFilterBackend
-from api.filters import UserStrategyFilter, StrategyFilter, CoinFilter
-from .models import User, Strategy, UserStrategy, Coin
+from api.filters import UserStrategyFilter, StrategyFilter, CoinFilter, ReferralsFilter
+from .models import User, Strategy, UserStrategy, Coin, Referrals
+from django.db.models import Sum, DecimalField, F
+from django.db.models.functions import Coalesce
 from bot.models import Order
 from bot.binance.b_client import BinanceClient
-from .serializers import CoinSerializer, StrategySerializer, UserSerializer, UserStrategySerializer, CustomTokenObtainPairSerializer, UserRegistrationSerializer, PasswordChangeSerializer
+from .serializers import CoinSerializer, StrategySerializer, UserSerializer, UserStrategySerializer, CustomTokenObtainPairSerializer, UserRegistrationSerializer, PasswordChangeSerializer, ReferralsSerializer
 
 class CustomTokenObtainPairView(TokenObtainPairView):
     serializer_class = CustomTokenObtainPairSerializer
@@ -121,3 +123,22 @@ class UserStrategyViewSet(viewsets.ModelViewSet):
 
         user_strategy_serializer = UserStrategySerializer(user_strategy).data
         return Response(user_strategy_serializer)
+
+class ReferralViewSet(viewsets.ModelViewSet):
+    permission_classes = [IsAuthenticated]
+
+    queryset = Referrals.objects.all().distinct()
+    serializer_class = ReferralsSerializer
+    filter_backends = [DjangoFilterBackend]
+    filterset_class = ReferralsFilter
+
+    @action(detail=False, methods=['get'], url_path='stats')
+    def stats(self, request, *args, **kwargs):
+        user = request.user
+        queryset = self.get_queryset().filter(referrer=user)
+
+        return Response({
+            'count': queryset.count(),
+            'pending_amount': queryset.filter(payment_status='pending').aggregate(Sum(F('payment_amount')))['payment_amount__sum'],
+            'paid_amount': queryset.filter(payment_status='paid').aggregate(Sum(F('payment_amount')))['payment_amount__sum']
+        })

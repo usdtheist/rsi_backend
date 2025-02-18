@@ -68,7 +68,8 @@ class UserSerializer(serializers.ModelSerializer):
     model = User
     fields = ['id', 'full_name', 'email', 'phone_number', 'whatsapp_number', 'active', 'active',
               'client_id', 'client_secret', 'is_staff', 'payment_receipt_url', 'approved_at',
-              'role', 'date_joined', 'auto_recommended', 'referral_code', 'profile_image_url'
+              'role', 'date_joined', 'auto_recommended', 'referral_code', 'profile_image_url',
+              'wallet_address',
               ]
 
   def get_role(self, obj):
@@ -97,6 +98,7 @@ class UserSerializer(serializers.ModelSerializer):
     instance.profile_image_url = validated_data.get('profile_image_url', instance.profile_image_url)
     instance.phone_number = validated_data.get('phone_number', instance.phone_number)
     instance.whatsapp_number = validated_data.get('whatsapp_number', instance.whatsapp_number)
+    instance.wallet_address = validated_data.get('wallet_address', instance.wallet_address)
 
     instance.save()
 
@@ -134,6 +136,8 @@ class UserStrategySerializer(serializers.ModelSerializer):
   buy_at = serializers.CharField(source='strategy_id.buy_at', read_only=True)
   recommended = serializers.BooleanField(source='strategy_id.recommended', read_only=True)
   purchased = serializers.SerializerMethodField()
+  expected_time = serializers.CharField(source='strategy_id.expected_time', read_only=True)
+  expected_percentage = serializers.CharField(source='strategy_id.expected_percentage', read_only=True)
 
   class Meta:
     model = UserStrategy
@@ -141,3 +145,13 @@ class UserStrategySerializer(serializers.ModelSerializer):
 
   def get_purchased(self, obj):
     return obj.purchased()
+
+class ReferralsSerializer(serializers.ModelSerializer):
+  referred_user = serializers.SerializerMethodField()
+
+  class Meta:
+    model = Referrals
+    fields = ['id', 'code', 'referred_user', 'payment_status', 'payment_amount']
+
+  def get_referred_user(self, obj):
+    return {'name': obj.referred_user.full_name, 'email': obj.referred_user.email }
