@@ -16,7 +16,7 @@ class SellClient(BinanceClient):
         status='pending',
       ).first()
 
-      print(f"here is the pending order that is going to sold {db_order}")
+      print(f"here is the pending order that is going to sold {db_order} against {strategy}")
       db_order.status = 'in_progress'
       db_order.save()
 
