@@ -21,7 +21,7 @@ class BinanceTrading:
       order = binance_client.buySymbol(symbol, strategy)
     elif signal == 'SELL' and strategy.purchased:
       binance_client = SellClient(user.client_id, user.client_secret)
-      print(f"Selling order for user {user.id}")
+      print(f"Selling order for user {user.id} with strategy {strategy.id}")
       order = binance_client.sellSymbol(symbol, strategy)
       print('-----------------------------------------------')
       print(f"Sell Order for user {user.id}: {order}")
