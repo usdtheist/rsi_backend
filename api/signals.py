@@ -37,7 +37,7 @@ def after_save_coin(sender, instance, created, **kwargs):
   if not UserCoin.objects.filter(coin_id__id=instance.id).exists():
     users = User.objects.all()
     for user in users:
-      UserCoin.objects.create(coin_id=instance.id, user_id=user.id)
+      UserCoin.objects.create(coin_id=instance, user_id=user)
 
 @receiver(post_save, sender=Strategy)
 def after_save_strategy(sender, instance, **kwargs):
