@@ -39,11 +39,10 @@ def fetch_coins():
   print('Coins fetched')
 
   for coin in coins:
-    existing_coin = Coin.objects.filter(name=coin['name'])
+    existing_coin = Coin.objects.get(name=coin['name'])
 
-    if existing_coin.count() > 0:
-      existing_coin = existing_coin.first()
-      existing_coin.bas_name = coin['base_name']
+    if existing_coin:
+      existing_coin.base_name = coin['base_name']
       existing_coin.asset = coin['asset']
       existing_coin.save()
     else:
