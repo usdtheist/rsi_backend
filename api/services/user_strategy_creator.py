@@ -4,9 +4,9 @@ class UserStrategyCreator:
   def __init__(self, user, coin):
     self.user = user
     self.coin = coin
-    
+
   def __strategies(self):
-    return Strategy.objects.filter(coin_id=self.coin)    
+    return Strategy.objects.filter(coin_id=self.coin)
 
   def create(self):
     for strategy in self.__strategies():

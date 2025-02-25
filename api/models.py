@@ -64,6 +64,12 @@ class Coin(models.Model):
       models.Index(fields=["name"]),
     ]
 
+class UserCoin(models.Model):
+  id = models.AutoField(primary_key=True)
+  user_id = models.ForeignKey(User, on_delete=models.CASCADE, related_name='user_coins')
+  coin_id = models.ForeignKey(Coin, on_delete=models.CASCADE, related_name='user_coins')
+  auto_recommended = models.BooleanField(default=False)
+
 class Strategy(models.Model):
   id = models.AutoField(primary_key=True)
   name = models.CharField(max_length=50, unique=True)

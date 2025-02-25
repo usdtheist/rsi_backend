@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import User, Coin, Strategy, UserStrategy, Referrals
+from .models import User, Coin, Strategy, UserStrategy, Referrals, UserCoin
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from django.contrib.auth import authenticate
 from django.contrib.auth import get_user_model
@@ -155,3 +155,17 @@ class ReferralsSerializer(serializers.ModelSerializer):
 
   def get_referred_user(self, obj):
     return {'name': obj.referred_user.full_name, 'email': obj.referred_user.email }
+
+class UserCoinSerializer(serializers.ModelSerializer):
+  user = serializers.SerializerMethodField()
+  coin = serializers.SerializerMethodField()
+
+  class Meta:
+    model = UserCoin
+    fields = ['id', 'user', 'coin', 'auto_recommended']
+
+  def get_user(self, obj):
+    return { 'id': obj.user_id.id, 'name': obj.user_id.full_name, 'email': obj.user_id.email }
+
+  def get_coin(self, obj):
+    return { 'id': obj.coin_id.id, 'name': obj.coin_id.name }

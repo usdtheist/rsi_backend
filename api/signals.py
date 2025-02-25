@@ -1,7 +1,7 @@
 from django.db.models.signals import pre_save, post_save # type: ignore
 from django.dispatch import receiver # type: ignore
 from django.core.exceptions import ValidationError # type: ignore
-from api.models import Coin, User, UserStrategy, Strategy
+from api.models import Coin, User, UserStrategy, Strategy, UserCoin
 from bot.binance.b_client import BinanceClient
 from api.tasks import setup_user, setup_coin_strategies
 from django.core.exceptions import ObjectDoesNotExist
@@ -25,14 +25,28 @@ def after_save_user(sender, instance, created, **kwargs):
   if created:
     setup_user.delay(instance.id)
 
+    coins = Coin.objects.all()
+    for coin in coins:
+      UserCoin.objects.create(coin_id=coin, user_id=instance)
+
 @receiver(post_save, sender=Coin)
 def after_save_coin(sender, instance, created, **kwargs):
   if not Strategy.objects.filter(coin_id__id=instance.id).exists():
     setup_coin_strategies.delay(instance.id)
 
+  if not UserCoin.objects.filter(coin_id__id=instance.id).exists():
+    users = User.objects.all()
+    for user in users:
+      UserCoin.objects.create(coin_id=instance.id, user_id=user.id)
+
 @receiver(post_save, sender=Strategy)
 def after_save_strategy(sender, instance, **kwargs):
-  UserStrategy.objects.filter(strategy_id=instance, user_id__auto_recommended=True).update(enabled=instance.recommended)
+  user_coins = UserCoin.objects.filter(coin_id=instance.coin_id, auto_recommended=True)
+  for user_coin in user_coins:
+    strategies = UserStrategy.objects.filter(user_id=user_coin.user_id, strategy_id=instance)
+    print('strategies are going to update')
+    print(strategies.values())
+    strategies.update(enabled=instance.recommended)
 
 @receiver(pre_save, sender=UserStrategy)
 def before_save_user_strategy(sender, instance, **kwargs):

@@ -1,13 +1,14 @@
 from django.urls import path, include
 from .views import UserRegistrationView
 from rest_framework.routers import DefaultRouter
-from .views import UserViewSet, CoinViewSet, StrategyViewSet, UserStrategyViewSet, CustomTokenObtainPairView, LogoutView, PasswordChangeView, ReferralViewSet
+from .views import UserViewSet, CoinViewSet, StrategyViewSet, UserStrategyViewSet, CustomTokenObtainPairView, LogoutView, PasswordChangeView, ReferralViewSet, UserCoinViewSet
 
 router = DefaultRouter()
 router.register(r'users', UserViewSet)
 router.register(r'coins', CoinViewSet)
 router.register(r'strategies', StrategyViewSet)
 router.register(r'user_strategies', UserStrategyViewSet)
+router.register(r'user_coins', UserCoinViewSet)
 router.register(r'referrals', ReferralViewSet)
 
 urlpatterns = [

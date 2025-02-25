@@ -6,13 +6,13 @@ from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework_simplejwt.tokens import RefreshToken
 from django_filters.rest_framework import DjangoFilterBackend
-from api.filters import UserStrategyFilter, StrategyFilter, CoinFilter, ReferralsFilter
-from .models import User, Strategy, UserStrategy, Coin, Referrals
+from api.filters import UserStrategyFilter, StrategyFilter, CoinFilter, ReferralsFilter, UserCoinFilter
+from .models import User, Strategy, UserStrategy, Coin, Referrals, UserCoin
 from django.db.models import Sum, DecimalField, F
 from django.db.models.functions import Coalesce
 from bot.models import Order
 from bot.binance.b_client import BinanceClient
-from .serializers import CoinSerializer, StrategySerializer, UserSerializer, UserStrategySerializer, CustomTokenObtainPairSerializer, UserRegistrationSerializer, PasswordChangeSerializer, ReferralsSerializer
+from .serializers import CoinSerializer, StrategySerializer, UserSerializer, UserStrategySerializer, CustomTokenObtainPairSerializer, UserRegistrationSerializer, PasswordChangeSerializer, ReferralsSerializer, UserCoinSerializer
 
 class CustomTokenObtainPairView(TokenObtainPairView):
     serializer_class = CustomTokenObtainPairSerializer
@@ -123,6 +123,13 @@ class UserStrategyViewSet(viewsets.ModelViewSet):
 
         user_strategy_serializer = UserStrategySerializer(user_strategy).data
         return Response(user_strategy_serializer)
+
+class UserCoinViewSet(viewsets.ModelViewSet):
+    permission_classes = [IsAuthenticated]
+    serializer_class = UserCoinSerializer
+    queryset = UserCoin.objects.all()
+    filter_backends = [DjangoFilterBackend]
+    filterset_class = UserCoinFilter
 
 class ReferralViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
