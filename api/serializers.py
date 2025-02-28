@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import User, Coin, Strategy, UserStrategy, Referrals, UserCoin
+from .models import User, Coin, Strategy, UserStrategy, Referrals, UserCoin, ContactUs
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from django.contrib.auth import authenticate
 from django.contrib.auth import get_user_model
@@ -169,3 +169,13 @@ class UserCoinSerializer(serializers.ModelSerializer):
 
   def get_coin(self, obj):
     return { 'id': obj.coin_id.id, 'name': obj.coin_id.name }
+
+class ContactUsSerializer(serializers.ModelSerializer):
+  resolved_by_name = serializers.SerializerMethodField()
+
+  class Meta:
+    model = ContactUs
+    fields = ['id', 'name', 'email', 'subject', 'message', 'resolved', 'mark_as_read', 'created_at', 'resolved_by', 'resolved_by_name']
+
+  def get_resolved_by_name(self, obj):
+    return obj.resolved_by.full_name if obj.resolved_by else None

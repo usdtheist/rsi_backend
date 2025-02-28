@@ -1,6 +1,6 @@
 from django.db.models import Q
 import django_filters
-from .models import UserStrategy, Strategy, Coin, Referrals, UserCoin
+from .models import UserStrategy, Strategy, Coin, Referrals, UserCoin, ContactUs
 
 class UserStrategyFilter(django_filters.FilterSet):
   coin_id = django_filters.NumberFilter(field_name='strategy_id__coin_id')
@@ -37,3 +37,8 @@ class UserCoinFilter(django_filters.FilterSet):
   class Meta:
     model = UserCoin
     fields = ['user_id', 'coin_id']
+
+class ContactUsFilter(django_filters.FilterSet):
+  class Meta:
+    model = ContactUs
+    fields = ['resolved_by', 'mark_as_read', 'resolved']

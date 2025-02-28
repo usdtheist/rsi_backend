@@ -109,3 +109,15 @@ class UserStrategy(models.Model):
       order_type='BUY',
       parent_id__isnull=True
     ).exists()
+
+class ContactUs(models.Model):
+  id = models.AutoField(primary_key=True)
+  name = models.CharField(max_length=100, null=False)
+  email = models.EmailField(max_length=100, null=False)
+  subject = models.CharField(max_length=200, null=False)
+  message = models.TextField(null=False)
+  resolved = models.BooleanField(default=False)
+  mark_as_read = models.BooleanField(default=False)
+  resolved_by = models.ForeignKey(User, on_delete=models.SET_NULL, related_name='resolved_reports', null=True)
+
+  created_at = models.DateTimeField(auto_now_add=True)

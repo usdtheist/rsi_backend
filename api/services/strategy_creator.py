@@ -97,7 +97,7 @@ class StrategyCreator:
       { "name": "Strategy 85", "rsi_type": "6", "rsi_time": "1M", "coin_id": self.coin, "buy_at": 30, "sell_at": 70, "order": 85, "expected_time": "1 year", "expected_percentage": "150%" },
       { "name": "Strategy 86", "rsi_type": "6", "rsi_time": "1M", "coin_id": self.coin, "buy_at": 20, "sell_at": 70, "order": 86, "expected_time": "1 year", "expected_percentage": "150%" },
       { "name": "Strategy 87", "rsi_type": "6", "rsi_time": "1M", "coin_id": self.coin, "buy_at": 10, "sell_at": 70, "order": 87, "expected_time": "1 year", "expected_percentage": "150%" },
-      { "name": "Strategy 88", "rsi_type": "14", "rsi_time": "1M", "coin_id": self.coin, "buy_at": 30, "sell_at": 70, "order": 88, "expected_time": "15.2 years", "expected_percentage": "200%" },
-      { "name": "Strategy 89", "rsi_type": "14", "rsi_time": "1M", "coin_id": self.coin, "buy_at": 20, "sell_at": 70, "order": 89, "expected_time": "15.2 years", "expected_percentage": "200%" },
-      { "name": "Strategy 90", "rsi_type": "14", "rsi_time": "1M", "coin_id": self.coin, "buy_at": 10, "sell_at": 70, "order": 90, "expected_time": "15.2 years", "expected_percentage": "200%" }
+      { "name": "Strategy 88", "rsi_type": "14", "rsi_time": "1M", "coin_id": self.coin, "buy_at": 30, "sell_at": 70, "order": 88, "expected_time": "1.5 years", "expected_percentage": "200%" },
+      { "name": "Strategy 89", "rsi_type": "14", "rsi_time": "1M", "coin_id": self.coin, "buy_at": 20, "sell_at": 70, "order": 89, "expected_time": "1.5 years", "expected_percentage": "200%" },
+      { "name": "Strategy 90", "rsi_type": "14", "rsi_time": "1M", "coin_id": self.coin, "buy_at": 10, "sell_at": 70, "order": 90, "expected_time": "1.5 years", "expected_percentage": "200%" }
     ]

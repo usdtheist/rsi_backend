@@ -6,13 +6,13 @@ from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework_simplejwt.tokens import RefreshToken
 from django_filters.rest_framework import DjangoFilterBackend
-from api.filters import UserStrategyFilter, StrategyFilter, CoinFilter, ReferralsFilter, UserCoinFilter
-from .models import User, Strategy, UserStrategy, Coin, Referrals, UserCoin
+from api.filters import UserStrategyFilter, StrategyFilter, CoinFilter, ReferralsFilter, UserCoinFilter, ContactUsFilter
+from .models import User, Strategy, UserStrategy, Coin, Referrals, UserCoin, ContactUs
 from django.db.models import Sum, DecimalField, F
 from django.db.models.functions import Coalesce
 from bot.models import Order
 from bot.binance.b_client import BinanceClient
-from .serializers import CoinSerializer, StrategySerializer, UserSerializer, UserStrategySerializer, CustomTokenObtainPairSerializer, UserRegistrationSerializer, PasswordChangeSerializer, ReferralsSerializer, UserCoinSerializer
+from .serializers import CoinSerializer, StrategySerializer, UserSerializer, UserStrategySerializer, CustomTokenObtainPairSerializer, UserRegistrationSerializer, PasswordChangeSerializer, ReferralsSerializer, UserCoinSerializer, ContactUsSerializer
 
 class CustomTokenObtainPairView(TokenObtainPairView):
     serializer_class = CustomTokenObtainPairSerializer
@@ -149,3 +149,10 @@ class ReferralViewSet(viewsets.ModelViewSet):
             'pending_amount': queryset.filter(payment_status='pending').aggregate(Sum(F('payment_amount')))['payment_amount__sum'],
             'paid_amount': queryset.filter(payment_status='paid').aggregate(Sum(F('payment_amount')))['payment_amount__sum']
         })
+
+class ContactUsViewSet(viewsets.ModelViewSet):
+    permission_classes = [AllowAny]
+    queryset = ContactUs.objects.all().order_by('-created_at')
+    serializer_class = ContactUsSerializer
+    filter_backends = [DjangoFilterBackend]
+    filterset_class = ContactUsFilter
