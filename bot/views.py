@@ -2,7 +2,7 @@ from rest_framework import viewsets, mixins, status
 from rest_framework.response import Response
 from rest_framework.decorators import action
 from django_filters.rest_framework import DjangoFilterBackend
-from django.db.models import Sum, F, ExpressionWrapper, DecimalField, IntegerField, Count, Case, When
+from django.db.models import Sum, F, ExpressionWrapper, DecimalField, IntegerField, Count, Case, When, Value
 from django.db.models.functions import Cast, Round
 from bot.models import Order
 from api.models import UserStrategy, Coin
@@ -96,30 +96,50 @@ class TradeViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
         queryset = queryset.filter(user_strategy_id__strategy_id__coin_id=coin_id)
 
     trade_counts = queryset.annotate(
-                      sell_price=Cast(F('parent__price_unit'), DecimalField(max_digits=20, decimal_places=8)),
-                      sell_quantity=Cast(F('parent__quantity'), DecimalField(max_digits=20, decimal_places=8)),
-                      sell_commission=Cast(F('parent__commission'), DecimalField(max_digits=20, decimal_places=8)),
-                      buy_amount=Cast(F('amount'), DecimalField(max_digits=20, decimal_places=8)),
+    sell_price=Cast(F('parent__price_unit'), DecimalField(max_digits=20, decimal_places=8)),
+    sell_quantity=Cast(F('parent__quantity'), DecimalField(max_digits=20, decimal_places=8)),
+    sell_commission=Cast(F('parent__commission'), DecimalField(max_digits=20, decimal_places=8)),
+    buy_amount=Cast(F('amount'), DecimalField(max_digits=20, decimal_places=8)),
 
-                      # Ensure correct type conversion for profit_or_loss calculation
-                      profit_or_loss=ExpressionWrapper(
-                        ((F('sell_price') * F('sell_quantity')) - F('sell_commission')) - F('buy_amount'),
-                        output_field=DecimalField(max_digits=20, decimal_places=8)
-                      ),
-                    ).aggregate(
-                      positive_trades=Count(
-                        Case(
-                          When(profit_or_loss__gt=0, then=1),
-                          output_field=IntegerField()
-                        )
-                      ),
-                      negative_trades=Count(
-                        Case(
-                          When(profit_or_loss__lt=0, then=1),
-                          output_field=IntegerField()
-                        )
-                      )
-                    )
+    # Calculate profit or loss
+    profit_or_loss=ExpressionWrapper(
+        ((F('sell_price') * F('sell_quantity')) - F('sell_commission')) - F('buy_amount'),
+        output_field=DecimalField(max_digits=20, decimal_places=8)
+    ),
+
+    # Profit or loss percentage
+    profit_or_loss_percentage=ExpressionWrapper(
+        (F('profit_or_loss') / F('buy_amount')) * 100,
+        output_field=DecimalField(max_digits=20, decimal_places=2)
+    )
+).aggregate(
+    positive_trades=Count(
+        Case(
+            When(profit_or_loss__gt=0, then=1),
+            output_field=IntegerField()
+        )
+    ),
+    negative_trades=Count(
+        Case(
+            When(profit_or_loss__lt=0, then=1),
+            output_field=IntegerField()
+        )
+    ),
+    positive_profit_percentage=Sum(
+        Case(
+            When(profit_or_loss_percentage__gt=0, then=F('profit_or_loss_percentage')),
+            default=Value(0),
+            output_field=DecimalField(max_digits=20, decimal_places=2)
+        )
+    ),
+    negative_loss_percentage=Sum(
+        Case(
+            When(profit_or_loss_percentage__lt=0, then=F('profit_or_loss_percentage')),
+            default=Value(0),
+            output_field=DecimalField(max_digits=20, decimal_places=2)
+        )
+    )
+)
 
     return Response(trade_counts)
 
