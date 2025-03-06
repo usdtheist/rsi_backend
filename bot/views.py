@@ -60,11 +60,17 @@ class TradeViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
     strategy_id = self.request.query_params.get('strategy_id', None)
     user_id = self.request.query_params.get('user_id', None)
     coin_id = self.request.query_params.get('coin_id', None)
-    invested = self.request.query_params.get('invested', None)
+    trade_type = self.request.query_params.get('trade_type', None)
 
-    if invested:
-      invested_bool = invested.lower() == 'true'
-      queryset = queryset.filter(parent_id__isnull=invested_bool)
+    if trade_type:
+      trade_type = trade_type.lower()
+      if trade_type  == 'open':
+        queryset = queryset.filter(parent_id__isnull=True)
+      elif trade_type  == 'closed':
+        queryset = queryset.filter(parent_id__isnull=False)
+      elif trade_type == 'all':
+        queryset = queryset.all()
+
     if strategy_id:
       queryset = queryset.filter(strategy_id=strategy_id)
     if user_id:

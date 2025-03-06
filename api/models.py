@@ -93,7 +93,7 @@ class UserStrategy(models.Model):
   user_id = models.ForeignKey(User, on_delete=models.CASCADE, related_name='user_strategies')
   strategy_id = models.ForeignKey(Strategy, on_delete=models.CASCADE, related_name='user_strategies')
   enabled = models.BooleanField(default=True)
-  amount = models.FloatField(null=False, default=0)
+  amount = models.FloatField(null=False, default=10.0)
 
   class Meta:
     ordering = ['strategy_id__order']
