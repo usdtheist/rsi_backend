@@ -1,5 +1,4 @@
 from rest_framework import viewsets, status
-from django.core.mail import EmailMultiAlternatives
 from django.template.loader import render_to_string
 from rest_framework.decorators import action
 from django.contrib.auth.tokens import default_token_generator

@@ -4,7 +4,9 @@ from django.core.exceptions import ValidationError # type: ignore
 from api.models import Coin, User, UserStrategy, Strategy, UserCoin
 from bot.binance.b_client import BinanceClient
 from api.tasks import setup_user, setup_coin_strategies
-from django.core.exceptions import ObjectDoesNotExist
+
+from rsi_project.mail.backend.smtp import send_mail
+from django.template.loader import render_to_string
 
 @receiver(pre_save, sender=Coin)
 def before_save_coin(sender, instance, **kwargs):
@@ -23,6 +25,9 @@ def before_save_coin(sender, instance, **kwargs):
 @receiver(post_save, sender=User)
 def after_save_user(sender, instance, created, **kwargs):
   if created:
+    html_content = render_to_string('emails/welcome_email.html', {'user': instance})
+    send_mail("Welcome to USDTHEIST family", instance.email, html_content)
+
     setup_user.delay(instance.id)
 
     coins = Coin.objects.all()
