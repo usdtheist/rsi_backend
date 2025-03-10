@@ -59,9 +59,16 @@ INSTALLED_APPS = [
     'django_filters',
     'rest_framework_simplejwt.token_blacklist',
     'django_extensions',
-    # 'debug_toolbar',
-    # 'mail_panel',
 ]
+
+# if DEBUG:
+#     INSTALLED_APPS += [
+#         'debug_toolbar',
+#         'mail_panel',
+#     ]
+
+# EMAIL_BACKEND = 'mail_panel.backend.MailToolbarBackend'
+# INTERNAL_IPS = ['127.0.0.1', '0.0.0.0']
 
 WSGI_APPLICATION = 'rsi_project.wsgi.application'
 # ASGI_APPLICATION = 'rsi_project.asgi.application'
@@ -207,6 +214,3 @@ EMAIL_SSL_CERTFILE = None
 EMAIL_SSL_KEYFILE = None
 EMAIL_TIMEOUT = 20
 
-# DEBUG_TOOLBAR_CONFIG
-# EMAIL_BACKEND = 'mail_panel.backend.MailToolbarBackend'
-# INTERNAL_IPS = ['127.0.0.1', '0.0.0.0']
