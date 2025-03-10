@@ -59,8 +59,8 @@ INSTALLED_APPS = [
     'django_filters',
     'rest_framework_simplejwt.token_blacklist',
     'django_extensions',
-    'debug_toolbar',
-    'mail_panel',
+    # 'debug_toolbar',
+    # 'mail_panel',
 ]
 
 WSGI_APPLICATION = 'rsi_project.wsgi.application'
