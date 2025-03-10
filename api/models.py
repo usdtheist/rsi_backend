@@ -1,4 +1,5 @@
 from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin
+from django.core.validators import MinValueValidator
 from django.db import models
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
@@ -93,7 +94,7 @@ class UserStrategy(models.Model):
   user_id = models.ForeignKey(User, on_delete=models.CASCADE, related_name='user_strategies')
   strategy_id = models.ForeignKey(Strategy, on_delete=models.CASCADE, related_name='user_strategies')
   enabled = models.BooleanField(default=True)
-  amount = models.FloatField(null=False, default=10.0)
+  amount = models.FloatField(null=False, default=10.0, validators=[MinValueValidator(10.0)])
 
   class Meta:
     ordering = ['strategy_id__order']

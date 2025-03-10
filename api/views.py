@@ -1,4 +1,6 @@
 from rest_framework import viewsets, status
+from django.core.mail import EmailMultiAlternatives
+from django.template.loader import render_to_string
 from rest_framework.decorators import action
 from django.contrib.auth.tokens import default_token_generator
 from django.core.mail import send_mail
@@ -48,13 +50,12 @@ class PasswordResetRequestView(APIView):
             uid = urlsafe_base64_encode(force_bytes(user.pk))
             reset_url = f"{os.environ.get('NEXT_APP_URL')}/reset-password/{uid}/{token}/"
 
-            # Send email
-            send_mail(
-                'Password Reset Request',
-                f'Click the link to reset your password: {reset_url}',
-                'no-reply@usdtheist.com',
-                [email],
-            )
+
+            html_content = render_to_string('emails/password_reset_email.html', {'reset_url': reset_url, 'user': user})
+            subject = "Password Reset Request"
+            email = EmailMultiAlternatives(subject, '', to=[user.email])
+            email.attach_alternative(html_content, "text/html")
+            email.send()
 
         return Response({"message": "If an account exists with this email, a password reset link has been sent."}, status=status.HTTP_200_OK)
 

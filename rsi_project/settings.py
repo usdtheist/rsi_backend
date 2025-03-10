@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/3.2/ref/settings/
 
 from pathlib import Path
 import os
+import ssl
 from dotenv import load_dotenv
 from datetime import timedelta
 
@@ -43,12 +44,14 @@ ALLOWED_HOSTS = ["*"]
 # Application definition
 
 INSTALLED_APPS = [
+    # 'daphne',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    # 'channels',
     'api',
     'bot',
     'rest_framework',
@@ -56,7 +59,12 @@ INSTALLED_APPS = [
     'django_filters',
     'rest_framework_simplejwt.token_blacklist',
     'django_extensions',
+    'debug_toolbar',
+    'mail_panel',
 ]
+
+WSGI_APPLICATION = 'rsi_project.wsgi.application'
+# ASGI_APPLICATION = 'rsi_project.asgi.application'
 
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
@@ -67,6 +75,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'debug_toolbar.middleware.DebugToolbarMiddleware',
 ]
 
 REST_FRAMEWORK = {
@@ -107,9 +116,16 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'rsi_project.wsgi.application'
-
-
+CHANNEL_LAYERS = {
+    "default": {
+        # "BACKEND": "channels.layers.InMemoryChannelLayer",  # For testing
+        # Use Redis for production
+        "BACKEND": "channels_redis.core.RedisChannelLayer",
+        "CONFIG": {
+            "hosts": [("127.0.0.1", 6379)],
+        },
+    },
+}
 # Database
 # https://docs.djangoproject.com/en/3.2/ref/settings/#databases
 
@@ -184,3 +200,13 @@ EMAIL_USE_TLS = True
 EMAIL_HOST_USER = 'no-reply@usdtheist.com'
 EMAIL_HOST_PASSWORD = 'isjymlxgicvhzlim'
 DEFAULT_FROM_EMAIL = 'no-reply@usdtheist.com'
+
+# Add SSL context explicitly for Python 3.12 compatibility
+EMAIL_USE_SSL = False
+EMAIL_SSL_CERTFILE = None
+EMAIL_SSL_KEYFILE = None
+EMAIL_TIMEOUT = 20
+
+# DEBUG_TOOLBAR_CONFIG
+# EMAIL_BACKEND = 'mail_panel.backend.MailToolbarBackend'
+# INTERNAL_IPS = ['127.0.0.1', '0.0.0.0']
