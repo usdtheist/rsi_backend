@@ -51,7 +51,7 @@ class PasswordResetRequestView(APIView):
             reset_url = f"{os.environ.get('NEXT_APP_URL')}/reset-password/{uid}/{token}/"
 
             html_content = render_to_string('emails/password_reset_email.html', {'reset_url': reset_url, 'user': user})
-            send_mail("Password Reset Request", "", "no-reply@usdtheist.com", [user.email], html_message=html_content)
+            send_mail("Password Reset Request", user.email, html_content)
 
         return Response({"message": "If an account exists with this email, a password reset link has been sent."}, status=status.HTTP_200_OK)
 
