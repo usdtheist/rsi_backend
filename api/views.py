@@ -53,7 +53,9 @@ class PasswordResetRequestView(APIView):
             html_content = render_to_string('emails/password_reset_email.html', {'reset_url': reset_url, 'user': user})
             send_mail("Password Reset Request", user.email, html_content)
 
-        return Response({"message": "If an account exists with this email, a password reset link has been sent."}, status=status.HTTP_200_OK)
+            return Response({"message": "Password reset link has been sent to your email."}, status=status.HTTP_200_OK)
+        else:
+            return Response({"message": "No account found with this email."}, status=status.HTTP_200_OK)
 
 class PasswordResetConfirmView(APIView):
     authentication_classes = [BasicAuthentication, SessionAuthentication]
