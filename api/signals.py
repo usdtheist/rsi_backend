@@ -28,6 +28,10 @@ def after_save_user(sender, instance, created, **kwargs):
     html_content = render_to_string('emails/welcome_email.html', {'user': instance})
     send_mail("Welcome to USDTHEIST family", instance.email, html_content)
 
+    admin_users = list(User.objects.filter(is_staff=True).values_list('email', flat=True))
+    html_content = render_to_string('emails/admin/new_user_registration_email.html', {'user': instance})
+    send_mail("New member has joined the USDTHEIST family", admin_users[0], html_content, cc_recipients=[admin_users[1:]])
+
     setup_user.delay(instance.id)
 
     coins = Coin.objects.all()
@@ -46,11 +50,13 @@ def after_save_coin(sender, instance, created, **kwargs):
 
 @receiver(post_save, sender=Strategy)
 def after_save_strategy(sender, instance, **kwargs):
+  if not instance.limited_trades:
+    print(instance.name, instance.limited_trades)
+    user_strategies = UserStrategy.objects.filter(no_of_trades__gte=1, strategy_id=instance)
+    user_strategies.update(no_of_trades=0)
   user_coins = UserCoin.objects.filter(coin_id=instance.coin_id, auto_recommended=True)
   for user_coin in user_coins:
     strategies = UserStrategy.objects.filter(user_id=user_coin.user_id, strategy_id=instance)
-    print('strategies are going to update')
-    print(strategies.values())
     strategies.update(enabled=instance.recommended)
 
 @receiver(pre_save, sender=UserStrategy)

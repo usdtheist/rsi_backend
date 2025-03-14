@@ -1,5 +1,5 @@
 from api.models import UserStrategy, Strategy
-from django.db.models import Q, Exists, OuterRef
+from django.db.models import Q, Exists, OuterRef, F
 from bot.models import Order
 from bot.services.binance_trading import BinanceTrading
 
@@ -58,6 +58,9 @@ def fetch_strategies_for_buy(interval, symbol, rsi_6, rsi_14):
     Q(strategy_id__rsi_type="14", strategy_id__buy_at__gte=rsi_14)
   ).filter(
     purchased=False
+  ).filter(
+    Q(strategy_id__limited_trades=False) |
+    Q(strategy_id__limited_trades=True, no_of_trades__lte=F('strategy_id__max_trades'))
   ).distinct()
 
 def fetch_strategeis_for_sell(interval, symbol, rsi_6, rsi_14):
@@ -84,7 +87,11 @@ def fetch_strategeis_for_sell(interval, symbol, rsi_6, rsi_14):
 def start_trading(rsi_6, rsi_14, interval, symbol):
   signal = generate_signals(rsi_6, rsi_14)
 
+  print('----------------------------------------------------------------')
   print(f"Signal ===================>>>>> %s" % signal)
+  print(f"RSI 6 =================> %s" % rsi_6)
+  print(f"RSI 14 =================> %s" % rsi_14)
+  print('-=-=-=-=-=-=--=-=-=-=-=-=--=-=-=-=-=-=-')
 
   if signal == 'HOLD':
     return

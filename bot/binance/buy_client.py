@@ -9,7 +9,7 @@ class BuyClient(BinanceClient):
     try:
       current_price = self.getPriceOfSymbol(symbol)
       quantity = strategy.amount / current_price
-      print(f"You can buy {quantity} BTC with {strategy.amount} USD")
+      print(f"You can buy quantity: {quantity} with {strategy.amount} USD")
 
       order = self.order_market_buy(
         symbol=symbol,
@@ -18,6 +18,11 @@ class BuyClient(BinanceClient):
       print(order)
 
       db_order = self.create_db_order(order, strategy, amount=strategy.amount)
+
+      if db_order and strategy.strategy_id__limited_trades:
+        strategy.no_of_trades = strategy.no_of_trades + 1
+        strategy.save()
+
       return {"success": True, "order": db_order}
 
     except BinanceOrderException as e:

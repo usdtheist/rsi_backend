@@ -8,16 +8,21 @@
             .container { background-color: #181817; padding: 30px; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
             h1 { color: white; }
             p { font-size: 1.1em; color: white; }
+            .padding { padding-left: 1rem;}
             .btn { background-color: #BC8319; color: white !important; padding: 10px 20px; text-decoration: none; border-radius: 5px; }
         </style>
     </head>
     <body>
         <div class="container">
             <img src="https://usdtheist.s3.ap-south-1.amazonaws.com/logo.png" alt="Logo" width="75">
-            <p>Hello {{ user.full_name }},</p>
-            <p>Welcome to the USDTHEIST family.</p>
-
-            
+            <p>Hello,</p>
+            <p>New user have joined out system.</p>
+            <p>
+              <p class="padding">Here is the details:</p>
+              <p class="padding">Name: {{user.full_name}}</p>
+              <p class="padding">Email: {{user.email}}</p>
+              <p class="padding">Phone Number: {{user.phone_number}}</p>
+            </p>
 
             <div style="margin-top: 16px; color: white;">Best Regards,</div>
             <div style="margin-top: 4px; color: white;">USDTHEIST Team</div>

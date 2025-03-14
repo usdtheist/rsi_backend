@@ -56,6 +56,7 @@ class PasswordResetRequestView(APIView):
         else:
             return Response({"message": "No account found with this email."}, status=status.HTTP_200_OK)
 
+
 class PasswordResetConfirmView(APIView):
     authentication_classes = [BasicAuthentication, SessionAuthentication]
     permission_classes = [AllowAny]
@@ -150,6 +151,8 @@ class StrategyViewSet(viewsets.ModelViewSet):
         for str_data in request.data:
             strategy = Strategy.objects.get(id=str_data['id'])
             strategy.recommended = str_data['recommended']
+            strategy.limited_trades = str_data['limited_trades']
+            strategy.max_trades = str_data['max_trades']
 
             strategy.save()
 

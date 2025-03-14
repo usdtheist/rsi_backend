@@ -83,6 +83,8 @@ class Strategy(models.Model):
   order = models.IntegerField(null=True)
   expected_time = models.CharField(null=False, max_length=20, default="1 hours")
   expected_percentage = models.CharField(max_length=20, null=False, default="0.25%")
+  limited_trades = models.BooleanField(default=False)
+  max_trades = models.IntegerField(null=False, default=0)
 
   class Meta:
     constraints = [
@@ -95,6 +97,8 @@ class UserStrategy(models.Model):
   strategy_id = models.ForeignKey(Strategy, on_delete=models.CASCADE, related_name='user_strategies')
   enabled = models.BooleanField(default=True)
   amount = models.FloatField(null=False, default=10.0, validators=[MinValueValidator(10.0)])
+  # To keep the track of no of trades per strategy defined by admin via Strategy.max_trades
+  no_of_trades = models.IntegerField(null=False, default=0)
 
   class Meta:
     ordering = ['strategy_id__order']
