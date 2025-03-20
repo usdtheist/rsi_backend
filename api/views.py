@@ -15,8 +15,8 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from django_filters.rest_framework import DjangoFilterBackend
 from api.filters import UserStrategyFilter, StrategyFilter, CoinFilter, ReferralsFilter, UserCoinFilter, ContactUsFilter
 from .models import User, Strategy, UserStrategy, Coin, Referrals, UserCoin, ContactUs
-from django.db.models import Sum, DecimalField, F
-from django.db.models.functions import Coalesce
+from django.db.models import Sum, F, Exists, OuterRef
+from bot.services.binance_trading import BinanceTrading
 from bot.models import Order
 from bot.binance.b_client import BinanceClient
 from rest_framework.authentication import BasicAuthentication, SessionAuthentication
@@ -130,6 +130,36 @@ class UserViewSet(viewsets.ModelViewSet):
         balance = binance_client.fetch_account()
         return Response({"balance": balance}, status=status.HTTP_200_OK)
 
+    @action(detail=False, methods=['get'], url_path='sell_everything')
+    def sell_everything(self, request):
+        current_user = request.user
+        coins = Coin.objects.filter(enabled=True)
+
+        for coin in coins:
+            user_strategies = UserStrategy.objects.filter(
+                                            user_id__active=True,
+                                            strategy_id__coin_id=coin,
+                                            user_id=current_user
+                                        ).annotate(
+                                            purchased=Exists(
+                                                Order.objects.filter(
+                                                    user_strategy_id=OuterRef('id'),
+                                                    order_type='BUY',
+                                                    parent_id__isnull=True
+                                                )
+                                            )
+                                        ).filter(
+                                            purchased=True
+                                        ).distinct()
+
+            if user_strategies:
+                BinanceTrading(user_strategies, 'SELL', coin.name)
+                for strategy in user_strategies:
+                    strategy.enabled = False
+                    strategy.save()
+
+        return Response({"message": "All the strategies are updated successfully"}, status=status.HTTP_200_OK)
+
 class CoinViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
 
@@ -137,6 +167,35 @@ class CoinViewSet(viewsets.ModelViewSet):
     serializer_class = CoinSerializer
     filter_backends = [DjangoFilterBackend]
     filterset_class = CoinFilter
+
+    @action(detail=True, methods=['get'], url_path='sell_everything')
+    def sell_everything(self, request, pk=None):
+        coin = self.get_object()
+        current_user = request.user
+
+        user_strategies = UserStrategy.objects.filter(
+                                        user_id__active=True,
+                                        strategy_id__coin_id=coin,
+                                        user_id=current_user
+                                    ).annotate(
+                                        purchased=Exists(
+                                            Order.objects.filter(
+                                                user_strategy_id=OuterRef('id'),
+                                                order_type='BUY',
+                                                parent_id__isnull=True
+                                            )
+                                        )
+                                    ).filter(
+                                        purchased=True
+                                    ).distinct()
+
+        if user_strategies:
+            BinanceTrading(user_strategies, 'SELL', coin.name)
+            for strategy in user_strategies:
+                strategy.enabled = False
+                strategy.save()
+
+        return Response({"message": "All the strategies are updated successfully"}, status=status.HTTP_200_OK)
 
 class StrategyViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
@@ -175,6 +234,18 @@ class UserStrategyViewSet(viewsets.ModelViewSet):
 
         user_strategy_serializer = UserStrategySerializer(user_strategy).data
         return Response(user_strategy_serializer)
+
+    @action(detail=False, methods=['post'], url_path='bulk')
+    def bulk_update(self, request):
+        amount = request.data['amount']
+        coin = request.data['coin']
+        user = request.user
+
+        user_strategies = UserStrategy.objects.filter(user_id=user, strategy_id__coin_id__id=coin)
+
+        user_strategies.update(amount=amount)
+
+        return Response({"message": "All user strategies updated successfully."}, status=status.HTTP_200_OK)
 
 class UserCoinViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
