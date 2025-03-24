@@ -191,10 +191,9 @@ class TradeViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
 
     binance_client = SellClient(user.client_id, user.client_secret)
     response = binance_client.sellSymbol(coin.name, user_strategy)
-   
+
     if not response['success']:
       return Response(response['error'], status=422)
 
     serializer = OrderSerializer(response['order'])
     return Response(serializer.data, status=status.HTTP_200_OK)
- 

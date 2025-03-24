@@ -1,5 +1,5 @@
 from bot.binance.b_client import BinanceClient
-from binance.exceptions import BinanceOrderException, BinanceRequestException
+from binance.exceptions import BinanceOrderException, BinanceRequestException, BinanceAPIException
 
 class BuyClient(BinanceClient):
   def __init__(self, api_key, api_secret):
@@ -19,7 +19,7 @@ class BuyClient(BinanceClient):
 
       db_order = self.create_db_order(order, strategy, amount=strategy.amount)
 
-      if db_order and strategy.strategy_id__limited_trades:
+      if db_order and strategy.strategy_id.limited_trades:
         strategy.no_of_trades = strategy.no_of_trades + 1
         strategy.save()
 

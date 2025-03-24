@@ -13,7 +13,6 @@ class SellClient(BinanceClient):
         user_strategy=strategy,
         order_type='BUY',
         parent__isnull=True,
-        status='pending',
       ).first()
 
       print(f"here is the pending order that is going to sold {db_order} against {strategy}")
@@ -33,6 +32,18 @@ class SellClient(BinanceClient):
       db_order = self.create_db_order(order, strategy, amount=None, buyOrder=db_order)
       return {"success": True, "order": db_order}
 
+    except BinanceAPIException as e:
+      if "Account has insufficient balance for requested action." in str(e):
+        for coin in self.fetch_account():
+          if coin["name"] == strategy.strategy_id.coin_id.base_name:
+            if (Decimal(db_order.quantity) - Decimal(db_order.commission)) == Decimal(coin["free"]):
+              print('hello')
+              db_order.quantity = coin['free']
+              db_order.save()
+              print(db_order.quantity)
+      db_order.status = 'pending'
+      db_order.save()
+      return {"success": False, "error": f"Api Error: {e}"}
     except BinanceOrderException as e:
       db_order.status = 'pending'
       db_order.save()
