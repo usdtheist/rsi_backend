@@ -1,5 +1,5 @@
 from bot.binance.b_client import BinanceClient
-from binance.exceptions import BinanceOrderException, BinanceRequestException, BinanceAPIException
+from binance.exceptions import BinanceOrderException, BinanceRequestException
 
 class BuyClient(BinanceClient):
   def __init__(self, api_key, api_secret):

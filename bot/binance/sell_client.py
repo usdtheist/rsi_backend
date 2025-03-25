@@ -1,7 +1,7 @@
 from bot.binance.b_client import BinanceClient
 from decimal import Decimal
 from bot.models import Order
-from binance.exceptions import BinanceOrderException, BinanceRequestException
+from binance.exceptions import BinanceOrderException, BinanceRequestException, BinanceAPIException
 
 class SellClient(BinanceClient):
   def __init__(self, api_key, api_secret):
