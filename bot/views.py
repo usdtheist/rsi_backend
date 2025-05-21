@@ -20,7 +20,7 @@ class OrderViewSet(viewsets.ModelViewSet):
   filterset_class = OrderFilter
 
 class TradeViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
-  permission_classes = []
+  permission_classes = [IsAuthenticated]
   pagination_class = StandardResultsSetPagination
 
   def get_queryset(self):
