@@ -11,6 +11,7 @@ from bot.filters import OrderFilter
 from bot.binance.buy_client import BuyClient
 from bot.binance.sell_client import SellClient
 from rest_framework.permissions import IsAuthenticated
+from .pagination import StandardResultsSetPagination
 
 class OrderViewSet(viewsets.ModelViewSet):
   queryset = Order.objects.all()
@@ -20,6 +21,7 @@ class OrderViewSet(viewsets.ModelViewSet):
 
 class TradeViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
   permission_classes = [IsAuthenticated]
+  pagination_class = StandardResultsSetPagination
 
   def get_queryset(self):
 
@@ -82,6 +84,11 @@ class TradeViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
 
   def list(self, request, *args, **kwargs):
     queryset = self.get_queryset()
+    page = self.paginate_queryset(queryset)
+    if page is not None:
+        serializer = TradeSerializer(page, many=True)
+        return self.get_paginated_response(serializer.data)
+    
     serializer = TradeSerializer(queryset, many=True)
     return Response(serializer.data)
 
