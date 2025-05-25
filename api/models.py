@@ -5,6 +5,7 @@ from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 from django.utils.crypto import get_random_string
 from .managers import CustomUserManager
+from django.contrib.postgres.fields import JSONField
 
 class User(AbstractBaseUser, PermissionsMixin):
   id = models.AutoField(primary_key=True)
@@ -23,6 +24,7 @@ class User(AbstractBaseUser, PermissionsMixin):
   phone_number = models.CharField(max_length=16, null=True, blank=True)
   whatsapp_number = models.CharField(max_length=16, null=True, blank=True)
   wallet_address = models.CharField(max_length=50, null=True, blank=True)
+  has_active_subscription = models.BooleanField(default=False)
 
   USERNAME_FIELD = "email"
   REQUIRED_FIELDS = []
@@ -126,3 +128,28 @@ class ContactUs(models.Model):
   resolved_by = models.ForeignKey(User, on_delete=models.SET_NULL, related_name='resolved_reports', null=True)
 
   created_at = models.DateTimeField(auto_now_add=True)
+
+class Subscription(models.Model):
+    STATUS_CHOICES = [
+        ("pending", "Pending"),
+        ("completed", "Completed"),
+        ("cancelled", "Cancelled"),
+        ("expired", "Expired"),
+    ]
+    id = models.AutoField(primary_key=True)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="subscriptions")
+    amount = models.DecimalField(max_digits=10, decimal_places=2)
+    currency = models.CharField(max_length=10, default="USDT")
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="pending")
+    plisio_invoice_id = models.CharField(max_length=100, blank=True, null=True)
+    invoice_url = models.URLField(blank=True, null=True)
+    description = models.CharField(max_length=255, blank=True, null=True)
+    plisio_response = models.JSONField(blank=True, null=True)
+    start_date = models.DateTimeField(blank=True, null=True)
+    expiry_date = models.DateTimeField(blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+
+    def __str__(self):
+        return f"Subscription {self.id} for {self.user.email} - {self.status}"

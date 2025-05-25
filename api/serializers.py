@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import User, Coin, Strategy, UserStrategy, Referrals, UserCoin, ContactUs
+from .models import User, Coin, Strategy, UserStrategy, Referrals, UserCoin, ContactUs, Subscription
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from django.contrib.auth import authenticate
 from django.contrib.auth import get_user_model
@@ -69,7 +69,7 @@ class UserSerializer(serializers.ModelSerializer):
     fields = ['id', 'full_name', 'email', 'phone_number', 'whatsapp_number', 'active', 'active',
               'client_id', 'client_secret', 'is_staff', 'payment_receipt_url', 'approved_at',
               'role', 'date_joined', 'auto_recommended', 'referral_code', 'profile_image_url',
-              'wallet_address',
+              'wallet_address',"has_active_subscription"
               ]
 
   def get_role(self, obj):
@@ -99,7 +99,7 @@ class UserSerializer(serializers.ModelSerializer):
     instance.phone_number = validated_data.get('phone_number', instance.phone_number)
     instance.whatsapp_number = validated_data.get('whatsapp_number', instance.whatsapp_number)
     instance.wallet_address = validated_data.get('wallet_address', instance.wallet_address)
-
+    
     instance.save()
 
     return instance
@@ -179,3 +179,8 @@ class ContactUsSerializer(serializers.ModelSerializer):
 
   def get_resolved_by_name(self, obj):
     return obj.resolved_by.full_name if obj.resolved_by else None
+
+class SubscriptionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Subscription
+        fields = '__all__'

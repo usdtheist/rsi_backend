@@ -1,3 +1,6 @@
+from datetime import datetime, timedelta, timezone
+import hashlib
+import hmac
 from rest_framework import viewsets, status
 from django.template.loader import render_to_string
 from rest_framework.decorators import action
@@ -14,14 +17,17 @@ from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework_simplejwt.tokens import RefreshToken
 from django_filters.rest_framework import DjangoFilterBackend
 from api.filters import UserStrategyFilter, StrategyFilter, CoinFilter, ReferralsFilter, UserCoinFilter, ContactUsFilter
-from .models import User, Strategy, UserStrategy, Coin, Referrals, UserCoin, ContactUs
+from .models import User, Strategy, UserStrategy, Coin, Referrals, UserCoin, ContactUs, Subscription
 from django.db.models import Sum, F, Exists, OuterRef
 from bot.services.binance_trading import BinanceTrading
 from bot.models import Order
 from bot.binance.b_client import BinanceClient
 from rest_framework.authentication import BasicAuthentication, SessionAuthentication
-from .serializers import CoinSerializer, StrategySerializer, UserSerializer, UserStrategySerializer, CustomTokenObtainPairSerializer, UserRegistrationSerializer, PasswordChangeSerializer, ReferralsSerializer, UserCoinSerializer, ContactUsSerializer
+from .serializers import CoinSerializer, StrategySerializer, UserSerializer, UserStrategySerializer, CustomTokenObtainPairSerializer, UserRegistrationSerializer, PasswordChangeSerializer, ReferralsSerializer, UserCoinSerializer, ContactUsSerializer, SubscriptionSerializer
 import os
+import requests
+from django.conf import settings
+from django.http import HttpResponse
 
 class CustomTokenObtainPairView(TokenObtainPairView):
     serializer_class = CustomTokenObtainPairSerializer
@@ -279,3 +285,108 @@ class ContactUsViewSet(viewsets.ModelViewSet):
     serializer_class = ContactUsSerializer
     filter_backends = [DjangoFilterBackend]
     filterset_class = ContactUsFilter
+
+class SubscriptionViewSet(viewsets.ModelViewSet):
+    
+    queryset = Subscription.objects.all()
+    serializer_class = SubscriptionSerializer
+    permission_classes = []
+
+    @action(detail=False, methods=['get'], url_path='subscribe', permission_classes=[IsAuthenticated])
+    def subscribe(self, request):
+        from urllib.parse import urlencode
+        user = request.user
+        base_url = request.build_absolute_uri('/')[:-1]
+        amount = 5
+        currency = 'USD'
+        description = 'Usdtheist Monthly Subscription'
+        success_url = request.query_params.get('success_url')
+
+        existing_subscription = Subscription.objects.filter(user=user, status='pending').first()
+        if existing_subscription:
+            return Response({
+                "message": "Pending subscription already exists.",
+                "invoice_url": existing_subscription.invoice_url
+            }, status=status.HTTP_200_OK)
+
+        subscription = Subscription.objects.create(
+            user=user,
+            amount=amount,
+            currency=currency,
+            status='pending',
+            description=description
+        )
+       
+        params = {
+            'source_currency': currency,
+            'source_amount': str(amount),
+            'order_name': description,
+            'order_number': str(subscription.id),
+            'callback_url':  f"{base_url}/api/v1/subscriptions/callback?json=true",
+            "success_callback_url": success_url,
+            'email': user.email,
+            'api_key': settings.PLISIO_API_KEY,
+        }
+        purl = f"https://api.plisio.net/api/v1/invoices/new?{urlencode(params)}"
+        response = requests.get(purl)
+        plisio_data = response.json()
+        if plisio_data.get('status') != 'success':
+            return Response({"error": "Failed to create subscription invoice"}, status=status.HTTP_400_BAD_REQUEST)
+        
+        invoice_url = plisio_data['data']['invoice_url']
+        plisio_invoice_id = plisio_data['data']['txn_id']
+        
+        subscription.invoice_url = invoice_url
+        subscription.plisio_invoice_id = plisio_invoice_id
+        subscription.plisio_response = plisio_data
+        subscription.save()
+
+        return Response({
+            'subscription_id': subscription.id,
+            'invoice_url': invoice_url,
+        }, status=status.HTTP_201_CREATED)
+
+
+    @action(detail=False, methods=['post'], url_path='callback', permission_classes=[AllowAny])
+    def callback(self, request):
+        data = request.data
+
+        verify_hash = data.get('verify_hash')
+        order_number = data.get('order_number')
+        status_received = data.get('status')
+
+        # Prepare data for hash verification
+        data_without_hash = {k: v for k, v in data.items() if k != 'verify_hash'}
+        sorted_items = sorted(data_without_hash.items())
+        query_string = '|'.join(str(v) for _, v in sorted_items)
+
+        # Compute expected hash
+        expected_hash = hmac.new(
+            key=settings.PLISIO_API_KEY.encode(),
+            msg=query_string.encode(),
+            digestmod=hashlib.sha1
+        ).hexdigest()
+
+        if verify_hash != expected_hash:
+            return Response({"error": "Invalid hash"}, status=status.HTTP_403_FORBIDDEN)
+
+        try:
+            subscription = Subscription.objects.get(id=order_number)
+        except Subscription.DoesNotExist:
+            return Response({"error": "Subscription not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        # Update payment status
+        subscription.status = status_received
+
+        if status_received == 'completed':
+            now = datetime.now()
+            subscription.start_date = now
+            subscription.expiry_date = now + timedelta(days=30)
+
+            user = subscription.user
+            user.has_active_subscription = True
+            user.save()
+
+        subscription.save()
+
+        return Response({"message": "Callback processed successfully"}, status=status.HTTP_200_OK)
